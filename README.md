@@ -1,34 +1,4 @@
 # Bootstrapping-for-BQSR
-Bootstrap a variant resource for non-model organisms that lack known variant databases. This is to enable GATK Base Quality Score Recalibration (BQSR) to be performed for improved variant calls. 
-
----
-title: "Bootstrapping_for_non-model_BQSR"
-author: "Cali Willet"
-date: "07 Oct 2020"
-output:
-  html_notebook:
-    number_sections: yes
-    theme: united
-    toc: yes
-    toc_float: yes
-  html_document:
-    df_print: paged
-    toc: yes
-editor_options:
-  chunk_output_type: inline
----
-
- 
-
-__Last updated__: `r Sys.Date()`
-
- 
-
-```{r, echo=FALSE}
-library(knitr)
-opts_chunk$set(fig.align = "center")
-```
-
 
 # Introduction
 This is a pipeline for bootstrapping a variant resource to enable GATK base quality score recalibration (BQSR; see links below) for non-model organisms that lack a publicly available variant resource. Multiple rounds of bootstrapping can be performed. After the initial round, assess your final VCF variants and metrics and if a second round is desired, repeat all bootstrapping steps.
