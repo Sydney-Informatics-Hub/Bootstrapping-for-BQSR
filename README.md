@@ -48,14 +48,14 @@ In brief, these steps are:
 2)	Create intervals for variant calling (3200)
 3)	FastQC		
 4)	Fastq split
-5)	Collect fastq logs (perl) – reports reads, estimates duplication, etc
+5)	Collect fastq logs (perl) ? reports reads, estimates duplication, etc
 6)	Check fastq split sizes (requires fastQC data.txt)
 7)	Align parallel (tasks per sample = number of split fastq pairs) 
-8)	Check Bam sizes – quick check that assumes the fastq.gz are in default gzip format (eg some pre-processing tools write the new fastq in a different compression so this will throw out the values -expect Bam to be ~ 1.4-~1.45 times larger than the total fastq input size per sample 
+8)	Check Bam sizes ? quick check that assumes the fastq.gz are in default gzip format (eg some pre-processing tools write the new fastq in a different compression so this will throw out the values -expect Bam to be ~ 1.4-~1.45 times larger than the total fastq input size per sample 
 9)	Merge to per-sample raw bam
 10)	Dedup/sort and index
 11)	Collect dup logs (summarises dup % etc)
-12)	Reformat split disc (converts the split/disc read sam files to sorted, indexed BAM – useful for SV calling later) 
+12)	Reformat split disc (converts the split/disc read sam files to sorted, indexed BAM ? useful for SV calling later) 
 13)	Index 
 14)	Alignment metrics
 15)	Haplotype caller parallel (tasks per sample = 3200)
@@ -79,7 +79,7 @@ The scripts are labelled 'bsv-R<round>-S<stepNumber>_<step_name>' to make it eas
 
 Resources are indicated from one cohort of 37 Tasmanian devils. 
 
-Step 0: Create intervals for BQSR. Number of intervals must be (genome_size/100 Mb) – min interval size is 100 Mb. Number of intervals is determined by the script. Not listing this as a step, because ideally it should go in the same script as the generate HC intervals part - this will be updated later. 
+Step 0: Create intervals for BQSR. Number of intervals must be (genome_size/100 Mb) ? min interval size is 100 Mb. Number of intervals is determined by the script. Not listing this as a step, because ideally it should go in the same script as the generate HC intervals part - this will be updated later. 
 
 Update the PBS directives (project, lstorage) and edit the 'ref' and 'dict' variables, then run:
 
