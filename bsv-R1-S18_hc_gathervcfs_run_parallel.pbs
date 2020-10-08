@@ -1,0 +1,52 @@
+#!/bin/bash
+
+#Merge HC per interval VCFs into a single sample GVCF
+#Samples are usually gzipped and tabix indexed - for Tas Devils 
+# (and probably other species with CSI-indexed BAM re huge chrs) 
+# the gathered GVCF output cannot be written to GZ - invalid file
+# pointer error 
+
+
+#PBS -P ch81
+#PBS -N bsv-R1-S18
+#PBS -l walltime=02:00:00
+#PBS -l ncpus=192
+#PBS -l mem=764GB
+#PBS -l wd
+#PBS -q normal
+#PBS -W umask=022
+#PBS -o ./Logs/bsv-R1-S18-high.o
+#PBS -e ./Logs/bsv-R1-S18-high.e
+#PBS -l storage=scratch/er01+scratch/ch81
+
+
+module load nci-parallel/1.0.0
+module load openmpi/4.0.2
+
+set -e
+
+round=1
+
+SCRIPT=./bsv-R1-S18_hc_gathervcfs.sh
+INPUTS=./Inputs/hc_gathervcfs.inputs
+
+mkdir -p ./Error_capture/HC_gather_round${round}
+
+NCPUS=6 # CPUs per parallel task 
+
+
+#########################################################
+# Do not edit below this line (unless running on a node that 
+# does not have 48 CPU, in which case edit the value of 'CPN'
+#########################################################
+
+CPN=48 #CPUs per node 
+M=$(( CPN / NCPUS )) #tasks per node
+
+sed "s|^|${SCRIPT} |" ${INPUTS} > ${PBS_JOBFS}/input-file
+
+mpirun --np $((M * PBS_NCPUS / 48)) \
+        --map-by node:PE=${NCPUS} \
+        nci-parallel \
+        --verbose \
+        --input-file ${PBS_JOBFS}/input-file
