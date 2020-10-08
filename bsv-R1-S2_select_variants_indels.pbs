@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Bootstrap a variant resource for non-model organisms
+# lacking a resource for base quality score recalibration 
+# with GATK
+
+# Bootstrap variants round 1 step 1: extract SNPs from joint-genotyped VCF
+
+#PBS -P ch81
+#PBS -N bsv-R1-S2
+#PBS -l walltime=03:00:00
+#PBS -l ncpus=1
+#PBS -l mem=32GB
+#PBS -l wd
+#PBS -q hugemem
+#PBS -W umask=022
+#PBS -o ./Logs/bsv-R1-S2.o
+#PBS -e ./Logs/bsv-R1-S2.e
+#PBS -l storage=scratch/er01+scratch/ch81
+
+set -e
+
+module load gatk/4.1.2.0 R/3.6.1 python3/3.7.4 
+
+round=1
+step=2
+type=INDEL
+
+cohort=Devils_N37
+ref=./Reference/GCA_902635505.1_mSarHar1.11_genomic.fna
+vcf_in=../GenotypeGVCFs/${cohort}.vcf
+vcf_out=./VCFs/${cohort}_bootstrap-R${round}-S${step}_${type}_raw.vcf
+log=./GATK_logs/${cohort}_bootstrap-R${round}-S${step}_${type}_raw.oe
+
+echo "$(date): Bootstrap round ${round} step ${step}: Select ${type} variants" >> ${log} 2>&1
+gatk --java-options "-Xmx29g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" \
+	SelectVariants \
+        -R $ref \
+        -V $vcf_in \
+        -select-type ${type} \
+        -O $vcf_out >> ${log} 2>&1
+
+

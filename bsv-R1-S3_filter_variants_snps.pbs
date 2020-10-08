@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Bootstrap a variant resource for non-model organisms
+# lacking a resource for base quality score recalibration 
+# with GATK
+
+# Bootstrap variants round 1 step 1: extract SNPs from joint-genotyped VCF
+
+#PBS -P ch81
+#PBS -N bsv-R1-S3
+#PBS -l walltime=03:00:00
+#PBS -l ncpus=1
+#PBS -l mem=32GB
+#PBS -l wd
+#PBS -q hugemem
+#PBS -W umask=022
+#PBS -o ./Logs/bsv-R1-S3.o
+#PBS -e ./Logs/bsv-R1-S3.e
+#PBS -l storage=scratch/er01+scratch/ch81
+
+set -e
+
+module load gatk/4.1.2.0 R/3.6.1 python3/3.7.4 
+
+round=1
+step=3
+type=SNP
+
+cohort=Devils_N37
+ref=./Reference/GCA_902635505.1_mSarHar1.11_genomic.fna
+vcf_in=./VCFs/${cohort}_bootstrap-R${round}-S1_${type}_raw.vcf
+vcf_out=./VCFs/${cohort}_bootstrap-R${round}-S${step}_${type}_rawFilter.vcf
+log=./GATK_logs/${cohort}_bootstrap-R${round}-S${step}_${type}_rawFilter.oe
+
+echo "$(date): Bootstrap round ${round} step ${step}: Filter ${type} variants" >> ${log} 2>&1
+
+gatk --java-options "-Xmx29g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" \
+	VariantFiltration \
+        -R ${ref} \
+        -V ${vcf_in} \
+        -O ${vcf_out} \
+        -filter-name "QD_filter" -filter "QD < 2.0" \
+        -filter-name "FS_filter" -filter "FS > 60.0" \
+        -filter-name "MQ_filter" -filter "MQ < 40.0" \
+        -filter-name "SOR_filter" -filter "SOR > 4.0" \
+        -filter-name "MQRankSum_filter" -filter "MQRankSum < -12.5" \
+        -filter-name "ReadPosRankSum_filter" -filter "ReadPosRankSum < -8.0" >> ${log} 2>&1

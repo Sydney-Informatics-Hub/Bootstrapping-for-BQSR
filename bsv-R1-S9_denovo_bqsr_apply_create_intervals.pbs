@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Create approximately evenly sized intervals over which to 
+# parallelise BQSR apply. Do not split intervals, as this leads
+# to replicate reads in the merged BAM. 
+
+
+#PBS -P ch81
+#PBS -N bsv-R1-S9
+#PBS -l walltime=00:15:00
+#PBS -l ncpus=1
+#PBS -l mem=4GB
+#PBS -q express
+#PBS -W umask=022
+#PBS -l wd
+#PBS -o ./Logs/bsv-R1-S9_create_intervals.o
+#PBS -e ./Logs/bsv-R1-S9_create_intervals.e
+#PBS -lstorage=scratch/er01+scratch/ch81
+
+module load gatk/4.1.2.0
+
+set -e
+
+ref=./Reference/maclag_purgedhifi_10xarcs_jelly_pilon.fasta
+
+int=100 # number of intervals to create
+
+gatk SplitIntervals \
+	--java-options "-Xmx3g" \
+	--subdivision-mode BALANCING_WITHOUT_INTERVAL_SUBDIVISION \
+        -R $ref \
+        -scatter-count ${int} \
+        -O ./Reference/BQSR_apply_intervals

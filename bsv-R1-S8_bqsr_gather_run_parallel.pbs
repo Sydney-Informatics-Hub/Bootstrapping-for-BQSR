@@ -1,0 +1,80 @@
+#!/bin/bash
+
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: run GATK gatherBQSRReports over paralle tasks
+# Usage: first, run 'bash bqsr_gather_make_input.sh <cohort_name>',
+# then run bqsr_recal_run_parallel.pbs
+# Details:
+# 	BQSR BaseRecalibrator produces one table file per BQSR task, 
+#	which equals the number of samples * 32. These tables need to 
+#	be gathered into a merged table, so the number of gather tasks
+#	 = the number of samples. Each task uses 1 CPU for less than 
+#	1 minute, however if there are a large number of samples it 
+#	makes sense to parallelise. I like to use 2 samples to 1 CPU 
+#	or rounded to 1 node, eg 100 samples - use 48 CPU, 80 samples, 
+#	use 40 CPU. For datasets with a small number of samples, use 
+# 	the non-parallel (bqsr_gather_serial.pbs). Both the parallel 
+#	and the serial method require the script bqsr_make_input.sh 
+#	to be run first
+#
+# Author: Cali Willet
+# cali.willet@sydney.edu.au
+# Date last modified: 24/07/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON>> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
+
+#PBS -P ch81
+#PBS -N bsv-R1-S8
+#PBS -l walltime=00:10:00
+#PBS -l ncpus=37
+#PBS -l mem=148GB
+#PBS -q express
+#PBS -W umask=022 
+#PBS -l wd 
+#PBS -o ./Logs/bsv-R1-S8.o 
+#PBS -e ./Logs/bsv-R1-S8.e 
+#PBS -lstorage=scratch/ch81+scratch/er01
+ 
+ 
+module load openmpi/4.0.2
+module load nci-parallel/1.0.0
+
+
+set -e
+
+round=1
+
+SCRIPT=./bsv-R1-S8_bqsr_gather.sh 
+INPUTS=./Inputs/bqsr_gather.inputs   #just a sample ID list - not specific to round 1 
+
+
+NCPUS=1
+
+
+#########################################################
+# Do not edit below this line (unless running on a node that 
+# does not have 48 CPU, in which case edit the value of 'CPN'
+#########################################################
+
+CPN=48 #CPUs per node 
+M=$(( CPN / NCPUS )) #tasks per node
+
+sed "s|^|${SCRIPT} |" ${INPUTS} > ${PBS_JOBFS}/input-file
+
+mpirun --np $((M * PBS_NCPUS / 48)) \
+        --map-by node:PE=${NCPUS} \
+        nci-parallel \
+        --verbose \
+        --input-file ${PBS_JOBFS}/input-file
