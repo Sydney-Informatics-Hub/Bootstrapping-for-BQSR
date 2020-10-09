@@ -1,34 +1,7 @@
----
-title: "Bootstrapping_for_non-model_BQSR"
-author: "Cali Willet"
-date: "07 Oct 2020"
-output:
-  html_notebook:
-    number_sections: yes
-    theme: united
-    toc: yes
-    toc_float: yes
-  html_document:
-    df_print: paged
-    toc: yes
-editor_options:
-  chunk_output_type: inline
----
-
- 
-
-__Last updated__: `r Sys.Date()`
-
- 
-
-```{r, echo=FALSE}
-library(knitr)
-opts_chunk$set(fig.align = "center")
-```
-
 
 # Introduction
 This is a pipeline for bootstrapping a variant resource to enable GATK base quality score recalibration (BQSR; see links below) for non-model organisms that lack a publicly available variant resource. Multiple rounds of bootstrapping can be performed. After the initial round, assess your final VCF variants and metrics and if a second round is desired, repeat all bootstrapping steps.
+
 
 # Useful links
 Thorough overview of steps: https://gencore.bio.nyu.edu/variant-calling-pipeline-gatk4/
@@ -48,14 +21,14 @@ In brief, these steps are:
 2)	Create intervals for variant calling (3200)
 3)	FastQC		
 4)	Fastq split
-5)	Collect fastq logs (perl) ? reports reads, estimates duplication, etc
+5)	Collect fastq logs (perl) – reports reads, estimates duplication, etc
 6)	Check fastq split sizes (requires fastQC data.txt)
 7)	Align parallel (tasks per sample = number of split fastq pairs) 
-8)	Check Bam sizes ? quick check that assumes the fastq.gz are in default gzip format (eg some pre-processing tools write the new fastq in a different compression so this will throw out the values -expect Bam to be ~ 1.4-~1.45 times larger than the total fastq input size per sample 
+8)	Check Bam sizes – quick check that assumes the fastq.gz are in default gzip format (eg some pre-processing tools write the new fastq in a different compression so this will throw out the values -expect Bam to be ~ 1.4-~1.45 times larger than the total fastq input size per sample 
 9)	Merge to per-sample raw bam
 10)	Dedup/sort and index
 11)	Collect dup logs (summarises dup % etc)
-12)	Reformat split disc (converts the split/disc read sam files to sorted, indexed BAM ? useful for SV calling later) 
+12)	Reformat split disc (converts the split/disc read sam files to sorted, indexed BAM – useful for SV calling later) 
 13)	Index 
 14)	Alignment metrics
 15)	Haplotype caller parallel (tasks per sample = 3200)
@@ -79,7 +52,7 @@ The scripts are labelled 'bsv-R<round>-S<stepNumber>_<step_name>' to make it eas
 
 Resources are indicated from one cohort of 37 Tasmanian devils. 
 
-Step 0: Create intervals for BQSR. Number of intervals must be (genome_size/100 Mb) ? min interval size is 100 Mb. Number of intervals is determined by the script. Not listing this as a step, because ideally it should go in the same script as the generate HC intervals part - this will be updated later. 
+Step 0: Create intervals for BQSR. Number of intervals must be (genome_size/100 Mb) – min interval size is 100 Mb. Number of intervals is determined by the script. Not listing this as a step, because ideally it should go in the same script as the generate HC intervals part - this will be updated later. 
 
 Update the PBS directives (project, lstorage) and edit the 'ref' and 'dict' variables, then run:
 
@@ -89,7 +62,7 @@ qsub create_bqsr_ref_intervals.pbs
 
 Resources: 1 CPU, 1 GB mem, < 1 minute. 
 
-## Extract SNPs
+## 1. Extract SNPs
 Use 'SelectVariants' to extract SNPs from the joint-called final output VCF from 'Germline-ShortV' pipeline to a SNP-only VCF. 
 
 Update the PBS directives (project, lstorage) and edit the 'ref', 'round' (eg round 1, 2 etc of bootstrapping) and 'cohort' variables. Update the 'vcf_in' varable to the final VCF joint-genotyped output from the 'Germline-ShortV' pipeline, then run:
@@ -100,7 +73,7 @@ qsub bsv-R1-S1_select_variants_snps.pbs
 
 Resources: 1 hugemem CPU, 22 GB mem, ~ 5 minutes.
 
-## Extract indels
+## 2. Extract indels
 Use 'SelectVariants' to extract indels from the joint-called final output VCF from 'Germline-ShortV' pipeline to an indel-only VCF. 
 
 Update the PBS directives (project, lstorage) and edit the 'ref', 'round' and 'cohort' variables. Update the 'vcf_in' varable to the final VCF joint-genotyped output from the 'Germline-ShortV' pipeline, then run:
@@ -111,7 +84,7 @@ qsub bsv-R1-S2_select_variants_indels.pbs
 
 Resources: 1 hugemem CPU, 13 GB mem, ~ 4 minutes.
 
-## Filter SNPs
+## 3. Filter SNPs
 Use 'VariantFiltration' to filter SNPs from the SNP-only VCF output from step 1. Filtering parameters have been taken from https://gencore.bio.nyu.edu/variant-calling-pipeline-gatk4/
 
 Update the PBS directives (project, lstorage) and edit the 'ref', 'round' and 'cohort' variables, then run:
@@ -122,7 +95,7 @@ qsub bsv-R1-S3_filter_variants_snps.pbs
 
 Resources: 1 hugemem CPU, 15 GB mem, ~ 2 minutes.
 
-## Filter indels
+## 4. Filter indels
 Use 'VariantFiltration' to filter indels from the indel-only VCF output from step 2. Filtering parameters have been taken from https://gencore.bio.nyu.edu/variant-calling-pipeline-gatk4/
 
 Update the PBS directives (project, lstorage) and edit the 'ref', 'round' and 'cohort' variables, then run:
@@ -133,7 +106,7 @@ qsub bsv-R1-S4_filter_variants_indels.pbs
 
 Resources: 1 hugemem CPU, 11 GB mem, ~ 1 minute.
 
-## Apply filter SNPs
+## 5. Apply filter SNPs
 Use 'SelectVariants' to keep only the SNPs passing the filters applied in step 3.
 
 Update the PBS directives (project, lstorage) and edit the 'ref', 'round' and 'cohort' variables, then run:
@@ -144,7 +117,7 @@ qsub bsv-R1-S5_apply_filter_snps.pbs
 
 Resources: 1 hugemem CPU, 19 GB mem, ~ 5 minutes.
 
-## Apply filter indels
+## 6. Apply filter indels
 Use 'SelectVariants' to keep only the indels passing the filters applied in step 4.
 
 Update the PBS directives (project, lstorage) and edit the 'ref', 'round' and 'cohort' variables, then run:
@@ -155,8 +128,8 @@ qsub bsv-R1-S6_apply_filter_indels.pbs
 
 Resources: 1 hugemem CPU, 15 GB mem, ~ 3 minutes.
 
-## BQSR 1a: Make recalibration tables 
-Run 'BaseRecalibrator' over the intervals determined in step 0 to make a recalibration table per interval. 
+## 7. BQSR 1a: Make recalibration tables 
+Run 'BaseRecalibrator' over the intervals determined in step 0 to make a recalibration table per interval. This step uses the SNP and indel files created in steps 5 and 6 as "known sites" to train the recalibration model.  
 
 No edits are required for the script `bsv-R1-S7_bqsr_recal_make_input.sh`
 
@@ -176,7 +149,7 @@ qsub bsv-R1-S7_bqsr_recal_run_parallel.pbs
 
 Resources: 1120 normalbw CPUs, 3.6 TB mem, 23 minutes.
 
-## BQSR 1b: Gather tables
+## 8. BQSR 1b: Gather tables
 
 Use 'GatherBQSRReports' to gather the scattered interval tables into one table per sample. 
 
@@ -199,11 +172,11 @@ qsub bsv-R1-S8_bqsr_gather_run_parallel.pbs
 
 Resources: 37 CPUs, 33 GB mem, 40 seconds.
 
-## BQSR 1c: Print recalibrated BAMs
+## 9. BQSR 1c: Print recalibrated BAMs
 
 Use the gathered recalibration tables to print BAMs with relcaibrated base quality scores. Each sequence in the .dict file can be printed as its own BAM for massive parallelisation, however the subsequent merge step proceeds faster and using far less RAM if the number of BAMs to merge is not in the thousands. Two approaches to minimising this merge burden are described below. Follow the Tas Devils example for species with 'normal' reference sequences ie a small number of large sequences and a few to many much smaller sequences. Follow the de novo method if your reference sequence has many small sequences. 
 
-### For species with large autosomes, such as the Tasmanian Devils:
+### 9.1. For species with large autosomes, such as the Tasmanian Devils:
 
 Future improvements to this pipeline will automate the determination of number of BAMs to print per sample, but for now, this is set in the 'make input' script manually, using the following guidelines:
 
@@ -230,7 +203,7 @@ qsub bsv-R1-S9_bqsr_apply_run_parallel.pbs
 
 Resources: 224 normalbw CPUs, 1.1 TB mem, 85 minutes.
 
-### For species with many small contigs, such as from a de novo genome assembly:
+### 9.2. For species with many small contigs, such as from a de novo genome assembly:
 
 
 If there is no clear separation between "large sequences" and "small sequences" as expected from a polished genome assembly, the 'split intervals without subdivision' is a good approach. The arbitrary value of 100 is chosen for the number of intervals to make from the genome. If this number is too high for the specified genome, GATK will simply emit fewer intervals. 
@@ -257,7 +230,7 @@ qsub bsv-R1-S9_denovo_bqsr_apply_run_parallel.pbs
 ```
 
 
-## BQSR 1d: Merge the recalibrated BAMs
+## 10. BQSR 1d: Merge the recalibrated BAMs
 
 This step merges the multiple interval recalibrated BAMs into one recalibrated BAM per sample. GATK or SAMbamba can be used; SAMbamba is more efficient and (usually) faster but uses many more CPUs and KSUs. For small interval numbers (say < 100) the time saving with SAMbamba is probably negligible so GATK would be fine. For many (thousands) of interval BAMs to merge, SAMbamba will be much faster. Caveat on SAMbamba: every so often, a sample will inexplicably fail to merge with SAMbamba. The options are to merge that sample with GATK, or perform a 'cyclical merge' with SAMbamba, eg merge batches of BAMs and then perform a final merge.
 
@@ -269,9 +242,9 @@ bash bsv-R1-S10_bqsr_merge_make_input.sh <cohort>
 ```
 
 
-### Merge with GATK
+### 10.1. Merge with GATK
 
-Edit the variable 'round' in `bsv-R1-S10_bqsr_merge_GATK_make_bamLists.sh`. Note that this is a draft pipeline, so you will need to 'hash out' some code depending on which method you used to print recalibrated interval BAMs (5.9.1 or 5.9.2). This will be improved later!
+Edit the variable 'round' in `bsv-R1-S10_bqsr_merge_GATK_make_bamLists.sh`. Note that this is a draft pipeline, so you will need to 'hash out' some code depending on which method you used to print recalibrated interval BAMs (step 9.1 or 9.2). This will be improved later!
 
 
 Run the following, providing your config file base name as argument:
@@ -294,7 +267,7 @@ qsub bsv-R1-S10_bqsr_merge_GATK_run_parallel.pbs
 
 Resources: 37 hugemem CPUs, 767 GB mem, 36 minutes.
 
-### Merge with SAMbamba
+### 10.2. Merge with SAMbamba
 
 You will nede to install and compile sambamba v 0.7.1 from source, and set up your local install to load as a module. 
 
@@ -310,7 +283,7 @@ qsub bsv-R1-S10_bqsr_merge_SAMbamba_run_parallel.pbs
 Resources: 532 normalbw CPUs, 2.14 TB mem, 32 minutes.
 
 
-## Create CSI indexes
+## 11. Create CSI indexes
 
 If your reference genome has contigs longer than 2^29-1 bp, or you have run step 10 with `--CREATE_INDEX=false`, you will need to run this step. If not, proceed to step 12. 
 
@@ -333,7 +306,7 @@ qsub bsv-R1-S11_index_run_parallel.pbs
 Resources: 912 normal CPUs, 1.7 TB mem, 3 minutes.
  
 
-## BQSR 2a: create "after" recal tables
+## 12. BQSR 2a: create "after" recal tables
 
 Create BQSR recalibration tables on the recalibrated BAMs. These tables will be used to generate plots to assess the effectiveness of the recalibration. 
 
@@ -350,7 +323,7 @@ qsub bsv-R1-S12_bqsr_recal_run_parallel.pbs
 Resources: 1120 normalbw CPUs, 4.4 TB mem, 26 minutes.
 
 
-## BQSR 2b: gather the "after" recal tables
+## 13. BQSR 2b: gather the "after" recal tables
 
 Use 'GatherBQSRReports' to gather the scattered interval tables into one table per sample. 
 
@@ -367,7 +340,7 @@ qsub bsv-R1-S13_bqsr_gather_run_parallel.pbs
 
 Resources: 19 CPUs, 28 GB mem, 1 minute.
 
-## Create and analyse covariate plots
+## 14. Create and analyse covariate plots
 
 Use AnalyzeCovariates to plot the base quality scores before and after recalibration, to assess the efficacy of BQSR. 
 
@@ -391,7 +364,7 @@ Open the PDF files for a graphical comparison of the before and after base quali
 
 In general, you want to see your blue data points ("after" recalibration quality scores) following a straight line or normal distribution, depending on the plot. 
 
-## Haplotye caller 
+## 15. Haplotye caller 
 
 We will now call germline short variants again, this time using the reclibrated BAM output from step 10 as input instead of the "dedup_sort" BAMs generated in Fastq-to-BAM pipeline. 
 
@@ -415,7 +388,7 @@ qsub bsv-R1-S15_hc_run_parallel.pbs
 
 Resources: 7200 CPUs, 14 TB mem, 95 minutes. 
 
-## Haplotye caller - missing/failed intervals
+## 16. Haplotye caller - missing/failed intervals
 
 This step checks and resubmits tasks with missing or empty VCF or VCF index files. In the future, this step will be combined with step 17. 
 
@@ -443,7 +416,7 @@ qsub bsv-R1-S16_hc_missing_run_parallel.pbs
 Resources: 4 CPUs, 4.3 GB mem, 1 minute. 
 
 
-## Haplotye caller - check logs
+## 17. Haplotye caller - check logs
 
 Perform an in-depth check on each HaplotypeCaller task by assessing the run time, memory used, and the presence of errors or java exceptions in the GATK logs. In addition to this, please (as always) check that the exit status for the parent HC job and each HC sub-task is zero. 
 
@@ -468,7 +441,7 @@ At completion, the log file ./Logs/bsv-R1-S17.o should contain a message reporti
 
 Resources: ~ 2.5 minutes per sample and very little mem, so total ~2.5 minutes if all samples are run in parallel. 
 
-## Gather GVCFs 
+## 18. Gather GVCFs 
 
 This step merges the 3200 GVCFs per sample into one GVCF per sample. It requires 24 GB RAM per sample. This is best run on 6 CPUs of the normal nodes and not 1 CPU of the hugemem nodes. The chip speed and memory management differs between these nodes, and runs of the Tas Devils on hugemem took 3 - 4 times the walltime compared to normal nodes. 
 
@@ -477,7 +450,9 @@ If your samples have a big difference in coverage, you can save KSU (and increas
 ```
 #SampleID       LabSampleID     Seq_centre      Library(default=1)      Group
 ```
+```
 FD01070422      1220Armin       Kinghorn                1               high
+```
 ```
 FD02807142      1450Corey       Kinghorn                1               high
 ```
@@ -501,15 +476,19 @@ qsub bsv-R1-S18_gathervcfs_run_parallel.pbs
 Resources for 25 samples at ~30 X : 192 normal CPUs, 540 GB mem, 51 minutes 
 Resources for 12 samples at ~10 X : 96 normal CPUs, 382 GB mem, 31 minutes 
 
-## Genomics db import
+## 19. Genomics db import
 
-## Genomics db import - missing/failed intervals
+This step combines multiple sample GCVFs into a database enabling joint genotyping. It is an alternative to CombineGVCFs which has poorer performance. 
 
-## Genotype GVCFs
+This step is computationally intensive, and performance has been worsened after Gadi Q3 upgrades. NCI have investigated and been unable to identify the cause of the decreased performance. In Q1 2020, the 37 Tas Devil cohort was processed in 5 'chunks' of tasks, each chunk using 192 hugemem CPUs, ~ 3.7 TB RAM and ~ 4.1 hours walltime. When these jobs were re-run in Q3 (after the start Q3 upgrade), the same jobs used less RAM (~1.9 TB) and all failed on 5 hours walltime (668 of 3200 tasks outstanding).Interestingly, the Q1 run showed CPU efficiency values ~ 0.25 % while the Q3 run was ~ 0.65 %.  Given that each task uses 6 CPU for a single-threaded operation, the maximum CPU efficiency should be 1/6 = 0.167 %. In any case, the increase in "efficiency" yet decrease in mem and increase in walltime shows that there has been a significant system change that has affected the performance of this job. A similar circumstance has been observed for GenotypeGVCFs. For this task, the number of tasks running at once (whether in the same or concurrently running job) had a significant impact on performance, with the maximum number of tasks per node being 24 and concurrently running across all jobs being ~ 200 before performance is substantially worsened. For GenomicsDBimport, the number of tasks running at once is lower: 5 jobs x 4 nodes each X 8 tasks per node = 160 concurrent tasks. Tests at lower concurrent job numbers have not been conducted. For now, the best recommendation is to run this job with the current resources (5 jobs, 4 nodes per job, 6 CPU per task, 5 hours) which is the maximum per user for the hugemem nodes, and allow step 20 to collect and re-run any intervals that may fail on walltime.   
 
-## Genotype GVCFs - missing/failed intervals
+## 20. Genomics db import - missing/failed intervals
 
-## Final gather and sort VCF
+## 21. Genotype GVCFs
+
+## 22. Genotype GVCFs - missing/failed intervals
+
+## 23. Final gather and sort VCF
 
 This step gathers the genotyped interval VCFs into one final sorted and indexed VCF: these are your new set of variant calls, to replace those created in the Germline-ShortV pipeline. 
 
@@ -525,13 +504,44 @@ Resources: 2 hugemem CPUs, 43 GB mem, 12 minutes. Note: the gather is lighter (1
 
 ## VCF metrics and evaluation
 
+We now need to compare the callset produced from the unrecalibrated BAM and from the post-BQSR BAM. There are many ways in which this can be done and this section will likely evolve a lot as we run this pipeline over different species. 
+
+To start, we will produce simple metrics on each VCF with GATK. 
+
+Edit the 'cohort', 'round' and 'index' variables and PBS directives (project, lstorage) in `bsv-R1-S24_recalibrated_vcf_metrics.pbs`, then submit:
 
 
+```{bash metrics recal}
+qsub bsv-R1-S24_recalibrated_vcf_metrics.pbs
+```
 
 
+The same metrics will be generated for the original VCF. This script can be submitted at the same time as the previous. 
+
+Edit the 'cohort' and 'round' variables and PBS directives (project, lstorage) in `bsv-R1-S24_unrecalibrated_vcf_metrics.pbs`. 
+
+**Important:** Ensure that the 'vcf' variable points to the correct VCF input file: if you are doing round 1 of bootstraping, this will be the final sorted joint-genotyped VCF output from the Germline-ShortV pipeline. If you are doing round 2 or subsequent bootstrapping rounds, this will be the final sorted joint-genotyped VCF output from the previous round, eg `./GenotypeGVCFs/Round${round}/${cohort}.sorted.vcf` (or vcf.gz). 
+
+Then submit:
 
 
+```{bash metrics unrecal}
+qsub bsv-R1-S24_recalibrated_vcf_metrics.pbs
+```
 
+Resources: 2 hugemem CPUs, 27 GB (unrecal) 30 GB (recal) mem, 5 minutes. 
+
+To format these four output file sinto two TSV files easily read into Excel (including a "difference" field), run the following, providing 'round' and 'cohort' as arguments (order matters):
+
+```{perl format metrics}
+qsub bsv-R1-S24_collate_vcf_metrics.pl <round> <cohort>
+```
+
+
+For the test dataset Tasmanian devils, there were 221 K more SNPs and 201 K more indels in the recalibrated calls compared to those made from unrecalibrated BAM. The Ti/Tv ratio was 0.1 higher for recalibrated dataset, suggesting slightly lower false positive rate. 
+
+
+I intend to add some of the analyses described here: https://davetang.org/muse/2019/09/02/comparing-vcf-files/ 
 
 
 
