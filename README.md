@@ -1,4 +1,3 @@
-
 # Introduction
 This is a pipeline for bootstrapping a variant resource to enable GATK base quality score recalibration (BQSR; see links below) for non-model organisms that lack a publicly available variant resource. Multiple rounds of bootstrapping can be performed. After the initial round, assess your final VCF variants and metrics and if a second round is desired, repeat all bootstrapping steps.
 
@@ -480,7 +479,32 @@ Resources for 12 samples at ~10 X : 96 normal CPUs, 382 GB mem, 31 minutes
 
 This step combines multiple sample GCVFs into a database enabling joint genotyping. It is an alternative to CombineGVCFs which has poorer performance. 
 
-This step is computationally intensive, and performance has been worsened after Gadi Q3 upgrades. NCI have investigated and been unable to identify the cause of the decreased performance. In Q1 2020, the 37 Tas Devil cohort was processed in 5 'chunks' of tasks, each chunk using 192 hugemem CPUs, ~ 3.7 TB RAM and ~ 4.1 hours walltime. When these jobs were re-run in Q3 (after the start Q3 upgrade), the same jobs used less RAM (~1.9 TB) and all failed on 5 hours walltime (668 of 3200 tasks outstanding).Interestingly, the Q1 run showed CPU efficiency values ~ 0.25 % while the Q3 run was ~ 0.65 %.  Given that each task uses 6 CPU for a single-threaded operation, the maximum CPU efficiency should be 1/6 = 0.167 %. In any case, the increase in "efficiency" yet decrease in mem and increase in walltime shows that there has been a significant system change that has affected the performance of this job. A similar circumstance has been observed for GenotypeGVCFs. For this task, the number of tasks running at once (whether in the same or concurrently running job) had a significant impact on performance, with the maximum number of tasks per node being 24 and concurrently running across all jobs being ~ 200 before performance is substantially worsened. For GenomicsDBimport, the number of tasks running at once is lower: 5 jobs x 4 nodes each X 8 tasks per node = 160 concurrent tasks. Tests at lower concurrent job numbers have not been conducted. For now, the best recommendation is to run this job with the current resources (5 jobs, 4 nodes per job, 6 CPU per task, 5 hours) which is the maximum per user for the hugemem nodes, and allow step 20 to collect and re-run any intervals that may fail on walltime.   
+This step is computationally intensive, and performance has been worsened after Gadi Q3 upgrades. NCI have investigated and been unable to identify the cause of the decreased performance. In Q1 2020, the 37 Tas Devil cohort was processed in 5 'chunks' of tasks, each chunk using 192 hugemem CPUs, ~ 3.7 TB RAM and ~ 4.1 hours walltime. When these jobs were re-run in Q3 (after the start Q3 upgrade), the same jobs used less RAM (~1.9 TB) and all failed on 5 hours walltime (668 of 3200 tasks outstanding).Interestingly, the Q1 run showed CPU efficiency values ~ 0.25 % while the Q3 run was ~ 0.65 %.  Given that each task uses 6 CPU for a single-threaded operation, the maximum CPU efficiency should be 1/6 = 0.167 %. In any case, the increase in "efficiency" yet decrease in mem and increase in walltime shows that there has been a significant system change that has affected the performance of this job. A similar circumstance has been observed for GenotypeGVCFs. For this task, the number of tasks running at once (whether in the same or concurrently running job) had a significant impact on performance, with the maximum number of tasks per node being 24 and concurrently running across all jobs being ~ 200 before performance is substantially worsened. For GenomicsDBimport, the number of tasks running at once is lower: 5 jobs x 4 nodes each X 8 tasks per node = 160 concurrent tasks. Tests at lower concurrent job numbers have not been conducted. For now, the best recommendation is to run this job with the current resources (5 jobs, 4 nodes per job, 6 CPU per task, 5 hours) which is the maximum per user for the hugemem nodes, and allow step 20 to collect and re-run any intervals that may fail on walltime. 
+
+Edit the variable 'round' in `bsv-R1-S19_genomicsdbimport_make_input.sh` then run the following:
+
+```{bash gdbi make}
+bash bsv-R1-S19_genomicsdbimport_make_input.sh <cohort>
+```
+
+Edit the variables 'round' and 'ref' in `bsv-R1-S19_genomicsdbimport.sh`. 
+
+Edit PBS directives (project, lstorage) and 'round' varaible in `bsv-R1-S19_genomicsdbimport_run_parallel.pbs`. Don't adjust the resources. This script will be submitted 5 times:
+
+
+```{bash gdbi run}
+qsub bsv-R1-S19_genomicsdbimport_run_parallel.pbs
+for (( i = 1; i < 5; i++ ))
+do
+  next=$((i+1))
+  sed -i "s/chunk${i}/chunk${next}/g" bsv-R1-S19_genomicsdbimport_run_parallel.pbs
+  qsub bsv-R1-S19_genomicsdbimport_run_parallel.pbs
+  sleep 5
+done
+
+```
+
+Resources: (per chunk) 192 hugemem CPUs, 1.8 - 2 TB mem, 5 hours walltime (all exit 271)
 
 ## 20. Genomics db import - missing/failed intervals
 

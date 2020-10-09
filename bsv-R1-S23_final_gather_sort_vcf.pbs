@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# Gather per interval cohort VCFs after GenotypeGVCFs
+# Large chr species must gather and sort in different steps,
+# to unzipped VCF 
+
+#PBS -P ch81
+#PBS -N bsv-R1-S23
+#PBS -l walltime=00:60:00
+#PBS -l ncpus=2
+#PBS -l mem=64GB
+#PBS -l wd
+#PBS -q hugemem
+#PBS -W umask=022
+#PBS -o ./Logs/bsv-R1-S23.o
+#PBS -e ./Logs/bsv-R1-S23.e 
+#PBS -lstorage=scratch/er01+scratch/ch81
+
+
+module load gatk/4.1.2.0
+
+set -e
+
+cohort=Devils_N37
+round=1
+index=CSI # options: CSI or BAI. Use CSI for very large chrs. 
+
+vcfdir=./GenotypeGVCFs/Round${round}
+log=./GATK_logs/final_gather_sort_round${round}.oe
+args=./Inputs/final_gather_sort.inputs
+
+if [[ $index =~ CSI ]]
+then 
+	echo BAMs are CSI indexed - creating unzipped VCF output
+	unsorted=${vcfdir}/${cohort}.vcf
+	sorted=${vcfdir}/${cohort}.sorted.vcf		
+else 
+	echo BAMs are BAI indexed - creating zipped VCF output
+	unsorted=${vcfdir}/${cohort}.vcf.gz
+	sorted=${vcfdir}/${cohort}.sorted.vcf.gz
+fi
+
+rm -rf ${args} ${log} ${unsorted} ${sorted}
+
+
+# Write inputs file
+for interval in $(seq -f "%04g" 0 3199)
+do
+	echo "-I" ${vcfdir}/${cohort}.${interval}.vcf.gz >> ${args}
+done
+
+
+# Gather
+echo "$(date) : Start GATK4 final GatherVcfs for ${cohort} round ${round} of bootstrapping a variant resource for BQSR" > $log 2>&1
+
+gatk GatherVcfs \
+	--java-options "-Xmx58g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" \
+	--arguments_file ${args} \
+	--MAX_RECORDS_IN_RAM 100000000 \
+	-O ${unsorted} >> ${log} 2>&1
+
+echo "$(date) : Finished GATK4 final GatherVcfs" >> $log 2>&1
+
+# Sort
+echo "$(date) : Start GATK4 final SortVcf for ${cohort} round ${round} of bootstrapping a variant resource for BQSR" >> $log 2>&1
+
+gatk SortVcf \
+	--java-options "-Xmx58g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" \
+	-I ${unsorted} \
+	-O ${sorted} >> ${log} 2>&1
+
+echo "$(date) : Finished GATK4 final SortVcf" >> $log 2>&1
+
+if grep -q -i error $log
+then 
+        printf "Error in GATK log ${log}\n" 
+fi 
+
+if grep -q Exception $log
+then 
+        printf "Exception in GATK log ${log}\n" 
+fi
+
+

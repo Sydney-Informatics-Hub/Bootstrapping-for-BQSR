@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Generate VCF metrics for final joint-genotyped VCF
+# Compare to metrics from the VCF created without BQSR
+# The Metrics tool requires dbsnp input: will need to use
+# the botstrapped resource as input for the unrecal VCF, this
+# is not ideal but let's see how it turns out...
+
+#PBS -P ch81
+#PBS -N bsv-R1-S24
+#PBS -l walltime=00:30:00
+#PBS -l ncpus=2
+#PBS -l mem=64GB
+#PBS -l wd
+#PBS -q hugemem
+#PBS -W umask=022
+#PBS -o ./Logs/bsv-R1-S24-unrecal.o
+#PBS -e ./Logs/bsv-R1-S24-unrecal.e 
+#PBS -lstorage=scratch/er01+scratch/ch81
+
+
+module load gatk/4.1.2.0
+
+set -e
+
+cohort=Devils_N37
+round=1
+
+
+vcf=../GenotypeGVCFs/${cohort}.vcf # The final sorted joint-genotyped VCF from Germline-ShortV pipeline (if round 1) OR the final sorted joint called VCF from the preceeding round of BQSR bootstrapping
+known_snps=./VCFs/${cohort}_bootstrap-R${round}-S5_SNP_filtered.vcf # The filtered SNP file generated from round $round of BQSR
+
+log=./GATK_logs/vcf_metrics_unrecalibrated_round${round}.oe
+rm -rf ${log}
+
+mkdir -p ./VCF_metrics/Round${round}
+metrics=./VCF_metrics/Round${round}/${cohort}_unrecalibrated_round${round}
+
+
+echo "$(date) : Start GATK4 metrics generation for ${cohort} BEFORE bootstrapped BQSR round ${round} variant calling " > $log 2>&1
+
+gatk CollectVariantCallingMetrics \
+	--java-options "-Xmx58g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" \
+	--DBSNP ${known_snps} \
+	-I ${vcf} \
+	-O ${metrics} >> ${log} 2>&1
+
+echo "$(date) : Finished GATK4 metrics generation" >> $log 2>&1
+
+
+if grep -q -i error $log
+then 
+        printf "Error in GATK log ${log}\n" 
+fi 
+
+if grep -q Exception $log
+then 
+        printf "Exception in GATK log ${log}\n" 
+fi
+
+
