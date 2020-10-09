@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Re-run failed intervals for genotypegvcfs step
+# Longest interval from Devils bsv-R1-S21 was 57 minutes
+# Highest RAM usage 4.15 GB
+# Run max 24 tasks per node; max ~ 200 total tasks in parallel,
+# whether they be in the same PBS job or separate PBS jobs,
+# as this step thrashes the Lustre file system and performance
+# is massively reduced as you add more parallel tasks
+# 432 CPU total is good; average is 15 minutes per chunk of tasks
+# Best CPU efficiency 0.19 after much work with NCI to try and
+# improve performance. Nothing really helped. Need to investigate
+# Garvan's method recently used to reprocess 1k genomes at once
+
+#PBS -P ch81
+#PBS -N bsv-R2-S22
+#PBS -l walltime=02:00:00
+#PBS -l ncpus=48
+#PBS -l mem=191GB
+#PBS -l wd
+#PBS -q normal
+#PBS -W umask=022
+#PBS -o ./Logs/bsv-R1-S22.o 
+#PBS -e ./Logs/bsv-R1-S22.e 
+#PBS -l storage=scratch/er01+scratch/ch81
+
+module load openmpi/4.0.2
+module load nci-parallel/1.0.0
+
+set -e
+
+SCRIPT=./bsv-R1-S21_genotypegvcfs.sh
+INPUTS=./Inputs/genotypegvcfs_missing.inputs
+
+NCPUS=2
+
+#########################################################
+# Do not edit below this line (unless running on a node that 
+# does not have 48 CPU, in which case edit the value of 'CPN'
+#########################################################
+
+CPN=48 #CPUs per node 
+M=$(( CPN / NCPUS )) #tasks per node
+
+sed "s|^|${SCRIPT} |" ${INPUTS} > ${PBS_JOBFS}/input-file
+
+mpirun --np $((M * PBS_NCPUS / 48)) \
+        --map-by node:PE=${NCPUS} \
+        nci-parallel \
+        --verbose \
+        --input-file ${PBS_JOBFS}/input-file

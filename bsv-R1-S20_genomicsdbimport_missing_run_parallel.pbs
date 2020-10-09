@@ -1,0 +1,48 @@
+#!/bin/bash
+
+#Consolidate GVCFs - failed tasks from first round of GenomicsDBimport
+
+#PBS -P ch81
+#PBS -N chunk1-bsv-R1-S20
+#PBS -l walltime=05:00:00
+#PBS -l ncpus=192
+#PBS -l mem=5600GB
+#PBS -l wd
+#PBS -q hugemem
+#PBS -W umask=022
+#PBS -o ./Logs/bsv-R1-S20-chunk1.o 
+#PBS -e ./Logs/bsv-R1-S20-chunk1.e 
+#PBS -lstorage=scratch/er01+scratch/ch81
+
+
+module load openmpi/4.0.2
+module load nci-parallel/1.0.0
+
+set -e
+
+SCRIPT=./bsv-R1-S19_genomicsdbimport.sh # same script as previous step, only inputs list differs
+INPUTS=./Inputs/genomicsdbimport_missing.inputs-chunk1
+
+NCPUS=6 # CPUs per parallel task
+
+
+#########################################################
+# Do not edit below this line (unless running on a node that 
+# does not have 48 CPU, in which case edit the value of 'CPN'
+#########################################################
+
+CPN=48 #CPUs per node 
+M=$(( CPN / NCPUS )) #tasks per node
+
+sed "s|^|${SCRIPT} |" ${INPUTS} > ${PBS_JOBFS}/input-file
+
+mpirun --np $((M * PBS_NCPUS / 48)) \
+        --map-by node:PE=${NCPUS} \
+        nci-parallel \
+        --verbose \
+        --input-file ${PBS_JOBFS}/input-file
+	
+
+
+
+
