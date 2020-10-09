@@ -6,15 +6,15 @@
 #Each one is used as input for GenotypeGVCFs
 
 #PBS -P ch81
-#PBS -N chunk6-bsv-R1-S19
+#PBS -N chunk1-bsv-R1-S19
 #PBS -l walltime=05:00:00
 #PBS -l ncpus=192
 #PBS -l mem=5600GB
 #PBS -l wd
 #PBS -q hugemem
 #PBS -W umask=022
-#PBS -o ./Logs/bsv-R1-S19-chunk6.o 
-#PBS -e ./Logs/bsv-R1-S19-chunk6.e 
+#PBS -o ./Logs/bsv-R1-S19-chunk1.o 
+#PBS -e ./Logs/bsv-R1-S19-chunk1.e 
 #PBS -lstorage=scratch/er01+scratch/ch81
 
 
@@ -30,7 +30,7 @@ mkdir -p ./GATK_logs/GenomicsDBImport_round${round} ./Error_capture/GenomicsDBIm
 
 
 SCRIPT=./bsv-R1-S19_genomicsdbimport.sh
-INPUTS=./Inputs/genomicsdbimport.inputs-chunk6
+INPUTS=./Inputs/genomicsdbimport.inputs-chunk1
 
 NCPUS=6 # CPUs per parallel task
 

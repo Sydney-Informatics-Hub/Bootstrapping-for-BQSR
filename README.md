@@ -558,7 +558,7 @@ Resources: 2 hugemem CPUs, 27 GB (unrecal) 30 GB (recal) mem, 5 minutes.
 To format these four output file sinto two TSV files easily read into Excel (including a "difference" field), run the following, providing 'round' and 'cohort' as arguments (order matters):
 
 ```{perl format metrics}
-qsub bsv-R1-S24_collate_vcf_metrics.pl <round> <cohort>
+perl bsv-R1-S24_collate_vcf_metrics.pl <round> <cohort>
 ```
 
 
