@@ -4,10 +4,9 @@
 # 
 # Platform: NCI Gadi HPC
 # Description: make inputs file for parallel exectuion of SAMtools index
-# Usage: bash index_make_input.sh <cohort_name>
 # Details:
-# 	Provide cohort name as argument. Sample info is read from <cohort>.config
-# 	Default is to make one input list for all samples (split=false), 
+# 	Sample info is read from <cohort>.config
+# 	Default is to make one input list for all samples (group=false), 
 # 	as indexing is fast so the SU cost saving for splitting into two 
 # 	jobs is negligible. If splitting into normal and tumour jobs is 
 #	desired, update group=false to group=true and in that case, script 
@@ -16,7 +15,7 @@
 #
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -30,13 +29,9 @@
 # 
 #########################################################
 
-if [ -z "$1" ]
-then
-        echo "Please run this script with the base name of your config file"
-        exit
-fi
 
-cohort=$1
+cohort=<cohort>
+config=${cohort}.config
 
 group=false
 
@@ -48,7 +43,7 @@ rm -f $t_input
 rm -f $n_input
 rm -f $input
 
-awk 'NR>1' ${cohort}.config | while read LINE
+awk 'NR>1' ${config} | while read LINE
 do 
 	sample=`echo $LINE | cut -d ' ' -f 1`
 	labSampleID=`echo $LINE | cut -d ' ' -f 2`

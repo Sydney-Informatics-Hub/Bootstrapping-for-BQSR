@@ -1,19 +1,27 @@
 #! /bin/bash
 
-# Create input file to check log files in parallel
-# For each sample, record minutes taken per interval
-# Flag any intervals with error messages
-# If there are no error messages, archive log files in a per sample tarball
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: Check logs from genomicsdbimport - write failed tasks or tarball logs if all passed
+# Author: Tracy Chew and Cali Willet
+# tracy.chew@sydney.edu.au;cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
 
-if [ -z "$1" ]
-then
-	echo "Please run this script with the base name of ../<cohort>.config as argument"
-	exit
-fi
-
-cohort=$1
-
-round=1
+cohort=<cohort>
+round=<round>
 
 logdir=./GATK_logs/GenomicsDBImport_round${round}
 errordir=./Error_capture/GenomicsDBImport_round${round}
@@ -41,7 +49,6 @@ do
 	if [[ $duration =~ NA || $memory =~ NA ]]
 	then
 		redo+=("$interval")
-	#elif grep -q Exception ${logdir}/${interval}.oe # no need to grep the .oe file, as this was done in the task and any grep printed to Error_capture
 	elif [ -f $err ]
 	then
 		redo+=("$interval")

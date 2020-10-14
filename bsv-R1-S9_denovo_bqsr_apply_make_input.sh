@@ -4,9 +4,8 @@
 # 
 # Platform: NCI Gadi HPC
 # Description: make inputs file for parallel exectuion of GATK ApplyBQSR
-# Usage: bash bqsr_apply_mke_input.sh <cohort_name>
 # Details:
-# 	Job can be run as separate tumour/normal jobs, or as one job. 
+# 	Job can be run as separate tumour/normal or highcov/lowcov jobs, or as one job. 
 #	The contigs do take longer to print for tumour compared to normal re 
 #	more data to print, but the impact of input sample size on effiency is 
 #	lower than for other jobs, as there are many more tasks than CPUs for 
@@ -16,11 +15,11 @@
 #	contigs are processed first. If no binomial grouping is desired, change 
 #	group=true to group=false. Assumes all non-cancer samples have suffix '-N',
 #	all other phenotype IDs are assigned to tumour.
-#	Provide cohort name as argument. Sample info is read from <cohort>.config
+#	Sample info is read from <cohort>.config
 #
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -34,13 +33,8 @@
 # 
 #########################################################
 
-if [ -z "$1" ]
-then
-        echo "Please run this script with the base name of your config file"
-        exit
-fi
-
-cohort=$1
+cohort=<cohort>
+config=${cohort}.config
 
 #group=false
 
@@ -57,7 +51,7 @@ list=$(ls -1 ./Reference/BQSR_apply_intervals | cut -d '-' -f 1)
 list=($list)
 list+=( "unmapped" )
 
-samples=$(awk 'NR>1 {print $2}' ${cohort}.config)
+samples=$(awk 'NR>1 {print $2}' ${config})
 samples=($samples)
 
 for (( i = 0; i < ${#list[@]}; i ++ ))

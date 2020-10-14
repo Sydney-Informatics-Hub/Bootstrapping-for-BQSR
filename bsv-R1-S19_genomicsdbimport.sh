@@ -1,11 +1,29 @@
 #!/bin/bash
 
-#Consolidate interval VCFs across multiple samples for GenotypeGVCFs (joint-calling)
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: Consolidate interval VCFs across multiple samples for GenotypeGVCFs (joint-calling) in parallel
+# Author: Cali Willet and Tracy Chew
+# cali.willet@sydney.edu.au;tracy.chew@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
 
 module load gatk/4.1.2.0 
 
-round=1
-ref=./Reference/GCA_902635505.1_mSarHar1.11_genomic.fna
+round=<round>
+ref=<ref>
 
 int=$1
 interval=./Reference/HC_intervals/${int}-scattered.interval_list
@@ -33,7 +51,7 @@ gatk GenomicsDBImport \
 	--tmp-dir ${tmp} \
 	--intervals ${interval} >> ${log} 2>&1
 
-echo "$(date) : Finished GATK 4 consolidate VCFs with GenomicsDBImport for: ${out}" >> ${log}
+echo "$(date) : Finished." >> ${log}
 
 if grep -q -i error $log
 then 

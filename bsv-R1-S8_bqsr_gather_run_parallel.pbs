@@ -3,12 +3,10 @@
 #########################################################
 # 
 # Platform: NCI Gadi HPC
-# Description: run GATK gatherBQSRReports over paralle tasks
-# Usage: first, run 'bash bqsr_gather_make_input.sh <cohort_name>',
-# then run bqsr_recal_run_parallel.pbs
+# Description: run GATK gatherBQSRReports over parallel tasks
 # Details:
-# 	BQSR BaseRecalibrator produces one table file per BQSR task, 
-#	which equals the number of samples * 32. These tables need to 
+# 	BQSR BaseRecalibrator produces one table file per BQSR task. 
+#	These tables need to 
 #	be gathered into a merged table, so the number of gather tasks
 #	 = the number of samples. Each task uses 1 CPU for less than 
 #	1 minute, however if there are a large number of samples it 
@@ -21,7 +19,7 @@
 #
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -35,7 +33,7 @@
 # 
 #########################################################
 
-#PBS -P ch81
+#PBS -P <project>
 #PBS -N bsv-R1-S8
 #PBS -l walltime=00:10:00
 #PBS -l ncpus=37
@@ -45,7 +43,7 @@
 #PBS -l wd 
 #PBS -o ./Logs/bsv-R1-S8.o 
 #PBS -e ./Logs/bsv-R1-S8.e 
-#PBS -lstorage=scratch/ch81+scratch/er01
+#PBS -l storage=<lstorage>
  
  
 module load openmpi/4.0.2
@@ -54,10 +52,10 @@ module load nci-parallel/1.0.0
 
 set -e
 
-round=1
+round=<round>
 
 SCRIPT=./bsv-R1-S8_bqsr_gather.sh 
-INPUTS=./Inputs/bqsr_gather.inputs   #just a sample ID list - not specific to round 1 
+INPUTS=./Inputs/bqsr_gather.inputs   #just a sample ID list - not specific to any round 
 
 
 NCPUS=1

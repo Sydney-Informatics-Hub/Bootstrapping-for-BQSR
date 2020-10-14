@@ -1,26 +1,37 @@
 #!/bin/bash
 
-#Create input for: hc_gathervcfs_run_parallel.pbs
-#Need a sample list for the run_parallel script and a
-#list of VCFs per sample
-
-# Devils have a low cov and high cov group - made  change to the config 
-# by adding 5th col for group and now library can't be left blank for default (if 
-# so, would require changing the align script that reads lib from col 4) 
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: create input for gather GVCFs
+# Made  change to the config file format by adding 5th col for group 
+# and now library can't be left blank for default (if so, would require 
+# changing the align script that reads lib from col 4) 
 # New group method will use the type specified in 'Group' col to name the 
-# by-group inputs files. 
+# by-group inputs files. This is useful when you have groups of differnet 
+# sequencing coverage eg high and low, as the run time for this task is ~ 
+# double for double coverage
+# Author: Cali Willet
+# cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
 
 set -e
 
-
-if [ -z "$1" ]
-then
-        echo "Please run this script with the base name of your config file"
-        exit
-fi
-
-cohort=$1
-round=1
+cohort=<cohort>
+config=${cohort}.config
+round=<round>
 group=false
  
 vcfdir=./GVCFs/Round${round}
@@ -30,7 +41,7 @@ rm -rf $input
 
 if [[ $group = true ]]
 then
-	groups=$(awk 'NR>1 {print $5}' ${cohort}.config | sort | uniq)
+	groups=$(awk 'NR>1 {print $5}' ${config} | sort | uniq)
 	groups=($groups)
 	for (( i = 0; i < ${#groups[@]}; i ++ ))
 	do
@@ -40,7 +51,7 @@ then
 fi	
 
 # Make inputs and args files: 	
-awk 'NR>1' ${cohort}.config | while read LINE
+awk 'NR>1' ${config} | while read LINE
 do
 	sample=`echo $LINE | cut -d ' ' -f 2`
 	

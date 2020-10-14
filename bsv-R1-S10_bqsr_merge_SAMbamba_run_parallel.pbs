@@ -5,8 +5,6 @@
 # Platform: NCI Gadi HPC
 # Description: merge recalibrated split BAM files into one final BAM
 # per sample, parallelising tasks by sample
-# Usage: first, run 'bash bqsr_merge_make_input.sh <cohort_name>'
-# 	then run this script with 'qsub bqsr_merge_run_parallel.pbs'
 # Details:
 # 	Each sample has 3367 recalibrated BAM files to be merged into one 
 # 	final BAM per sample. Process blood and tumour as separate jobs 
@@ -33,7 +31,7 @@
 #	from source, and resubmit. If that fails, use the GATK method.   
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -47,7 +45,7 @@
 # 
 #########################################################
 
-#PBS -P ch81
+#PBS -P <project>
 #PBS -N bsv-R1-S10-S
 #PBS -l walltime=01:30:00
 #PBS -l ncpus=532
@@ -57,7 +55,7 @@
 #PBS -l wd
 #PBS -o ./Logs/bsv-R1-S10.o
 #PBS -e ./Logs/bsv-R1-S10.e
-#PBS -lstorage=scratch/ch81+scratch/er01
+#PBS -l storage=<lstorage>
 
 module load openmpi/4.0.2
 module load nci-parallel/1.0.0
@@ -65,14 +63,12 @@ module load nci-parallel/1.0.0
 
 set -e
 
-
-round=1
-
+round=<round>
 
 SCRIPT=./bsv-R1-S10_bqsr_merge_SAMbamba.sh
 INPUTS=./Inputs/bqsr_merge.inputs  
 
-NCPUS=14 # NCPUS per task. <=~30X: 14 for normalbw, 24 for normal. Double for 60X.
+NCPUS=14 # NCPUS per task. <=~30X: 14 for normalbw, 24 for normal. Double for 60X. Change CPN= depending on use of normmal or broadwell!
 
 mkdir -p ./Error_capture/BQSR_merge_sambamba_round${round} ./BQSR_bams_sambamba ./BQSR_bams_sambamba/Round${round}
 

@@ -1,15 +1,28 @@
 #!/bin/bash
 
-#Run GATK HC using scatter-gather method
-#Runs gatk4_hc.sh tasks in parallel
-#1 task performs HC for 1 interval
-#1 task requires 1 CPU, 4GB mem
-#Some require up to 8 GB so provide this allowance to GATK
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: Run GATK HC using scatter-gather method for the failed HC tasks from step 15
+# Allowing more mem for these tasks
+# Author: Tracy Chew and Cali Willet
+# tracy.chew@sydney.edu.au;cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
 
-# Giving 2 CPU mem to these failed tasks 
 
-
-#PBS -P ch81
+#PBS -P <project>
 #PBS -N bsv-R1-S17
 #PBS -l walltime=01:00:00
 #PBS -l ncpus=4
@@ -19,13 +32,14 @@
 #PBS -l wd
 #PBS -o ./Logs/bsv-R1-S17.o
 #PBS -e ./Logs/bsv-R1-S17.e
-#PBS -lstorage=scratch/er01+scratch/ch81
+#PBS -l storage=<lstorage>
 
 module load openmpi/4.0.2
 module load nci-parallel/1.0.0
 
 set -e
 
+round=<round>
 
 SCRIPT=./bsv-R1-S17_hc_missing.sh
 INPUTS=./Inputs/hc_missing.inputs

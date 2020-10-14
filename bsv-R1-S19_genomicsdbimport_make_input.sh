@@ -1,22 +1,29 @@
 #!/bin/bash
 
-#Create input files for run gatk4 GenomicsDBImport in parallel
-#Consolidates VCFs across multiple samples for each interval
-#Run after merging interval VCFs into GVCF per sample (operates on GVCFs)
-# this job needs lots of ram - 192 GB per interval for Devils - so run as 
-# 5 x 640 task batches
-# Use the interval times fro fist round (pre bootstrap) calling to sort tasks so 
-# the  handful of slow runners are first
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: Create input files for run gatk4 GenomicsDBImport in parallel
+# Requires 'times' path to be manually updated by user
+# Author: Cali Willet and Tracy Chew
+# cali.willet@sydney.edu.au;tracy.chew@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
 
-if [ -z "$1" ]
-then
-        echo "Please run this script with the base name of your config file"
-        exit
-fi
-
-cohort=$1
-
-round=1
+cohort=<cohort>
+config=${cohort}.config
+round=<round>
 
 chunks=5
 ints=3200 
@@ -26,7 +33,7 @@ input=./Inputs/genomicsdbimport.inputs
 vcfdir=./GVCFs/Round${round}
 
 # Make sample map:
-awk 'NR>1' ${cohort}.config | while read LINE
+awk 'NR>1' ${config} | while read LINE
 do
 	sample=`echo $LINE | cut -d ' ' -f 2`	
 	#printf "${sample}\t./GVCFs/${sample}/${sample}.g.vcf.gz\n" >> gatk4_genomicsdbimport.sample_map # can't have GZ for Devils 
@@ -34,7 +41,7 @@ do
 done
 
 # Make input list, sort intervals based on last import run:
-times=/scratch/ch81/Devil_resequencing/Program_logs/genomicsdbimport_interval_duration_memory.txt
+times=/scratch/ch81/Devil_resequencing/Program_logs/genomicsdbimport_interval_duration_memory.txt ####manually check this path!!!!!!!!!
 intervals=$(awk 'NR>1' $times | sort -rnk 2  | awk '{print $1}')
 intervals=($intervals)
 

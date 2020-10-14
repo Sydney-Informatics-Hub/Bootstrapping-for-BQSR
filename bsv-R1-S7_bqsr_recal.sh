@@ -4,10 +4,9 @@
 # 
 # Platform: NCI Gadi HPC
 # Description: run GATK Base Recalibrator over parallel tasks
-# Usage: this script is executed by bqsr_recal_run_parallel.pbs
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 28/08/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -23,8 +22,9 @@
 
 module load gatk/4.1.2.0
  
-ref=./Reference/GCA_902635505.1_mSarHar1.11_genomic.fna
-cohort=Devils_N37
+ref=<ref>
+cohort=<cohort>
+round=<round>
 
 labSampleID=`echo $1 | cut -d ',' -f 1` 
 intNum=`echo $1 | cut -d ',' -f 2`
@@ -39,6 +39,8 @@ known_indels=./VCFs/${cohort}_bootstrap-R${round}-S6_INDEL_filtered.vcf
 
 rm -f $log $err $out 
 
+echo "$(date): Bootstrap round ${round} step 7: Base recalibrator for interval $interval" >> ${log} 2>&
+
 gatk BaseRecalibrator \
 	--java-options "-Xmx7G" \
 	-R $ref \
@@ -48,6 +50,7 @@ gatk BaseRecalibrator \
 	--known-sites $known_indels \
 	-O $out >> $log 2>&1
 
+echo "$(date): Finished." >> ${log} 2>&1
 
 if grep -q -i error $log
 then 

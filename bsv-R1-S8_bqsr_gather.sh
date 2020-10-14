@@ -4,10 +4,9 @@
 # 
 # Platform: NCI Gadi HPC
 # Description: run GATK GatherBQSRReports over parallel tasks
-# Usage: this script is executed by bqsr_gather_run_parallel.pbs
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 02/09/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -24,6 +23,8 @@
 module load gatk/4.1.2.0
 
 labSampleID=$1
+
+round=<round>
 
 tables=$(find ./BQSR_recal_tables/Round${round} -name "${labSampleID}.*.recal_data.table")
 tables=($tables)
@@ -46,6 +47,7 @@ gatk GatherBQSRReports \
 	$tables_list \
 	-O $out >> $log 2>&1
 
+echo "$(date): Finished." >> ${log} 2>&1
 
 if grep -q -i error $log
 then 

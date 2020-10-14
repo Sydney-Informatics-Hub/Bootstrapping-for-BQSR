@@ -4,8 +4,6 @@
 # 
 # Platform: NCI Gadi HPC
 # Description: run GATK Base Recalibrator over parallel tasks
-# Usage: first, run 'bash bqsr_recal_make_input.sh <cohort_name>', 
-# then execute this script with 'qsub bqsr_recal_run_parallel.pbs'
 # Details:
 # 	Run GATK BaseRecalibrator in 30 parallel chunks per sample
 # 	For tumour/normal, run time is ~ half for normal so best to split
@@ -31,7 +29,7 @@
 #
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 28/08/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -46,7 +44,7 @@
 #########################################################     
  
 
-#PBS -P ch81
+#PBS -P <project>
 #PBS -N bsv-R1-S12
 #PBS -l walltime=01:00:00
 #PBS -l ncpus=1120
@@ -56,19 +54,21 @@
 #PBS -l wd 
 #PBS -o ./Logs/bsv-R1-S12.o
 #PBS -e ./Logs/bsv-R1-S12.e
-#PBS -lstorage=scratch/er01+scratch/ch81
+#PBS -l storage=<lstorage>
  
 module load openmpi/4.0.2
 module load nci-parallel/1.0.0
 
 set -e
 
+round=<round>
+
 SCRIPT=./bsv-R1-S12_bqsr_recal.sh  
-INPUTS=./Inputs/bqsr_recal.inputs # just a sample ID and interval list, not specific to round 1
+INPUTS=./Inputs/bqsr_recal.inputs # just a sample ID and interval list, not specific to any round
 
-mkdir -p ./BQSR_recal_tables ./BQSR_recal_tables/Round1 ./GATK_logs/BQSR_round1 ./Error_capture/BQSR_round1
+mkdir -p ./BQSR_recal_tables ./BQSR_recal_tables/Round${round} ./GATK_logs/BQSR_round${round} ./Error_capture/BQSR_round${round}
 
-NCPUS=1
+NCPUS=1 # on broadwell 256 GB, CPN=28
 
 
 #########################################################

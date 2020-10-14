@@ -5,7 +5,6 @@
 # Platform: NCI Gadi HPC
 # Description: create input lists for merging recalibrated split 
 # BAM files into a final BAM per sample
-# Usage: bash bqsr_merge_make_input.sh <cohort_name>
 # Details:
 # 	Run tumour and normal as separate jobs re ~ double 
 #	walltime for tumour. If no binomial grouping is required, 
@@ -14,7 +13,7 @@
 #	are assigned to tumour	
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -28,7 +27,8 @@
 # 
 #########################################################
 
-cohort=$1
+cohort=<cohort>
+config=${cohort}.config
 
 group=false # Devils have a low cov and high cov group, but this is not detectable from the config like it is for T/N. Perhaps we need to reassess config format - add a column for grouping?
 
@@ -41,7 +41,7 @@ rm -f $n_input
 rm -f $input
 
 
-awk 'NR>1' ${cohort}.config | while read CONFIG
+awk 'NR>1' ${config} | while read CONFIG
 do 
         labSampleID=`echo $CONFIG | cut -d ' ' -f 2`	
 	

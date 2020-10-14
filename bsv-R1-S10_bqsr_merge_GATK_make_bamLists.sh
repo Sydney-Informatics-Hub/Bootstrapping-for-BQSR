@@ -5,14 +5,12 @@
 # Platform: NCI Gadi HPC
 # Description: create BAM lists for merging recalibrated split 
 # BAM files with GATK GatherBamFiles
-# Usage: bash bqsr_merge_make_bamLists.sh <cohort_name>
 # Details: GATK requires an ordered list of BAMs to merge. The 
-#	inputs are 3,366 recalibrated contig BAMs labelled as
-#	0 - 3365, and a recalobrated BAM with f12 unmapped read
-#	pairs labelled as number 3366.
+#	inputs are N recalibrated contig BAMs labelled as
+#	and a recalobrated BAM with f12 unmapped read pairs.
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -26,13 +24,8 @@
 # 
 #########################################################
 
-if [ -z "$1" ]
-then
-        echo "Please run this script with the base name of your config file"
-        exit
-fi
-
-cohort=$1
+cohort=<cohort>
+config=${cohort}.config
 
 
 intervals=$(ls -1 ./Reference/BQSR_apply_intervals | cut -d '-' -f 1) # Use this for 5.9.2
@@ -43,7 +36,7 @@ intervals=($intervals)
 bams_in=./BQSR_apply/Round${round}
 mkdir -p ./Inputs/BQSR_merge_lists
 
-samples=$(awk 'NR > 1 {print $2}' ${cohort}.config)
+samples=$(awk 'NR > 1 {print $2}' ${config})
 samples=($samples)
 
 for (( s = 0; s < ${#samples[@]}; s++ ))

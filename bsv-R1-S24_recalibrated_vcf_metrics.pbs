@@ -1,12 +1,26 @@
 #!/bin/bash
 
-# Generate VCF metrics for final joint-genotyped VCF
-# Compare to metrics from the VCF created without BQSR
-# The Metrics tool requires dbsnp input: will need to use
-# the botstrapped resource as input for the unrecal VCF, this
-# is not ideal but let's see how it turns out...
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: Generate VCF metrics for final joint-genotyped VCF
+# Author: Cali Willet
+# cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
 
-#PBS -P ch81
+#PBS -P <project>
 #PBS -N bsv-R1-S24
 #PBS -l walltime=00:30:00
 #PBS -l ncpus=2
@@ -16,16 +30,16 @@
 #PBS -W umask=022
 #PBS -o ./Logs/bsv-R1-S24-recal.o
 #PBS -e ./Logs/bsv-R1-S24-recal.e 
-#PBS -lstorage=scratch/er01+scratch/ch81
+#PBS -l storage=<lstorage>
 
 
 module load gatk/4.1.2.0
 
 set -e
 
-cohort=Devils_N37
-round=1
-index=CSI # options: CSI or BAI. Use CSI for very large chrs. 
+cohort=<cohort>
+round=<round>
+index=<index> # options: CSI or BAI. Use CSI for very large chrs. 
 
 vcfdir=./GenotypeGVCFs/Round${round}
 known_snps=./VCFs/${cohort}_bootstrap-R${round}-S5_SNP_filtered.vcf
@@ -46,17 +60,14 @@ else
 	vcf=${vcfdir}/${cohort}.sorted.vcf.gz
 fi
 
-
-
 echo "$(date) : Start GATK4 metrics generation for ${cohort} after bootstrapped BQSR round ${round} variant calling " > $log 2>&1
-
 gatk CollectVariantCallingMetrics \
 	--java-options "-Xmx58g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" \
 	--DBSNP ${known_snps} \
 	-I ${vcf} \
 	-O ${metrics} >> ${log} 2>&1
 
-echo "$(date) : Finished GATK4 metrics generation" >> $log 2>&1
+echo "$(date) : Finished." >> $log 2>&1
 
 
 if grep -q -i error $log

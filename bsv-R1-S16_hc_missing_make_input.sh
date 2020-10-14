@@ -1,20 +1,12 @@
 #!/bin/bash
 
-#After running gatk4_hc_run_parallel.pbs, check that all .vcf and .vcf.idx files
-#have been created for each interval for each sample
-#If not, this script creates gatk4_hc_missing.inputs
-#Then run gatk4_hc_missing_run_parallel.pbs to re-run these in parallel, with a single node
-
 #########################################################
 # 
 # Platform: NCI Gadi HPC
-# Description: 
-# Usage: 
-# Details:
-#
-# Author: Cali Willet
-# cali.willet@sydney.edu.au
-# Date last modified: 28/08/2020
+# Description: find failed HC tasks from step 15 and create inputs for these tasks to be re-run 
+# Author: Tracy Chew and Cali Willet
+# tracy.chew@sydney.edu.au;cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -29,15 +21,9 @@
 #########################################################
 
 
-if [ -z "$1" ]
-then
-        echo "Please run this script with the base name of your config file"
-        exit
-fi
-
-cohort=$1
-
-round=1
+cohort=<cohort>
+config=${cohort}.config
+round=<round>
 
 RED='\033[0;31m' 
 NC='\033[0m'
@@ -51,7 +37,7 @@ scatterdir=./Reference/HC_intervals
 
 
 #For each sample, check intervals with no/empty .vcf and .vcf.idx files
-awk 'NR>1' ${cohort}.config | while read LINE
+awk 'NR>1' ${config} | while read LINE
 do 
         sample=`echo $LINE | cut -d ' ' -f 2`
 	i=0

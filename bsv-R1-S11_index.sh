@@ -3,11 +3,11 @@
 #########################################################
 # 
 # Platform: NCI Gadi HPC
-# Description: create CSI index for the dedup/sort BAM file
-# Usage: this script is executed by index_run_parallel.pbs
+# Description: create CSI or BAI index for the dedup/sort BAM file
+# User must specify which
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -21,18 +21,26 @@
 # 
 #########################################################
 
-round=1
+round=<round>
 
 module load samtools/1.10
 
-labSampleID=`echo $1 | cut -d ',' -f 1`
+labSampleID=$1
+
+index=<index> #options: BAI or CSI . Need to automate this from .dict
 
 
-bam=./BQSR_bams/Round${round}/${labSampleID}.bqsr-R${round}.bam
+bam=./BQSR_bams/Round${round}/${labSampleID}.bqsr-R${round}.bam 
 
-# For CSI indexing: 
-samtools index -@ $NCPUS -c $bam #Note -c for CSI indexes
+if [[ $index =~ BAI ]]
+then
+	samtools index -@ $NCPUS $bam 
+elif [[ $index =~ CSI ]]
+then
+	samtools index -@ $NCPUS -c $bam
+else
+	echo Must specify CSI or BAI - you have specified $index. Aborting.
+	exit
+fi 
 
-# For BAI indexing: 
-#samtools index -@ $NCPUS $bam 
 

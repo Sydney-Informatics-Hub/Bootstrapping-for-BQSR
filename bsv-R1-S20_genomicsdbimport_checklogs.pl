@@ -1,10 +1,27 @@
 #!/usr/bin/perl
 
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: Check genomicsDBImport log files for interval duration and runtime total memory
+# Author: Tracy Chew and Cali Willet
+# tracy.chew@sydney.edu.au;cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
+
 use strict;
 use warnings;
-
-# Check genomicsDBImport log files
-# Collect: interval duration, check Runtime.totalMemory()
 
 my $logdir=$ARGV[0];
 my $cohort=$ARGV[1];

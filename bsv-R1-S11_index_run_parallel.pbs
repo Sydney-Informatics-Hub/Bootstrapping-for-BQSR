@@ -4,8 +4,6 @@
 # 
 # Platform: NCI Gadi HPC
 # Description: index dup-marked and sorted BAM files parallel by sample
-# Usage: first, run 'bash index_make_input.sh <cohort_name>', 
-# then execute this script with 'qsub index_run_parallel.pbs'
 # Details:
 # 	Running index as a separate job re high charge rate for 
 #	dedup/sort job. Expected run time at 24 CPU  ~ 3 mins 
@@ -15,7 +13,7 @@
 #
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -29,7 +27,7 @@
 # 
 ######################################################### 
  
-#PBS -P ch81
+#PBS -P <project>
 #PBS -N index
 #PBS -l walltime=00:20:00
 #PBS -l ncpus=912
@@ -39,7 +37,7 @@
 #PBS -l wd
 #PBS -o ./Logs/bsv-R1-S11.o 
 #PBS -e ./Logs/bsv-R1-S11.e 
-#PBS -lstorage=scratch/ch81+scratch/er01
+#PBS -l storage=<lstorage>
  
 module load openmpi/4.0.2
 module load nci-parallel/1.0.0

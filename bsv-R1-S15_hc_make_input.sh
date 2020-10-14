@@ -3,13 +3,12 @@
 #########################################################
 # 
 # Platform: NCI Gadi HPC
-# Description: 
-# Usage: 
-# Details:
-#
+# Description:  make inputs for parallel haplotype caller
+# All BAMs present in the BAM directory are used to make the inputs. 
+# If this is not suitable for your analysis, rectify the code or the directory. 
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -24,15 +23,13 @@
 #########################################################
 
 
-# cohort=$1 # not needed, as samples are being read from BAM dir 
-
-round=1
+round=<round>
 
 input=./Inputs/gatk4_hc.inputs
 
 rm -f $input
 
-intervals=$(cat ./Reference/HC_intervals/3200_intervals_taskTimeSorted.list)
+intervals=$(cat ./Reference/HC_intervals/3200_intervals_taskTimeSorted.list) # check path/exists
 intervals=($intervals)
 
 #Put higher coverage samples first

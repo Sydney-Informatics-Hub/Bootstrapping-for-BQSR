@@ -4,16 +4,9 @@
 # 
 # Platform: NCI Gadi HPC
 # Description: make inputs file for parallel or serial exectuion of 
-# GATK GatherBQSRReports
-# Usage: bash bqsr_gather_make_input.sh <cohort_name>
-# Details:
-#	Create sample list for gathering chunked BQSR recal tables 
-#	to one recal table per sample. Provide cohort name as argument. 
-#	Sample info is read from <cohort>.config
-#
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -27,13 +20,14 @@
 # 
 #########################################################
 
-cohort=$1
+cohort=<cohort>
+config=${cohort}.config
 
 input=./Inputs/bqsr_gather.inputs
 
 rm -f $input
 
-awk 'NR>1 {print $2}' ${cohort}.config > ${input}					
+awk 'NR>1 {print $2}' ${config} > ${input}					
 tasks=`wc -l < $input`
 printf "Number of BQSR gather tasks to run: ${tasks}\n"
 	

@@ -1,11 +1,29 @@
 #!/bin/bash
 
-# Create approximately evenly sized intervals over which to 
-# parallelise BQSR apply. Do not split intervals, as this leads
-# to replicate reads in the merged BAM. 
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: create intervals for parallel execution of ApplyBQSR
+# Details: Create approximately evenly sized intervals over which to 
+# 	parallelise BQSR apply. Do not split intervals, as this leads
+# 	to replicate reads in the merged BAM.
+# Author: Cali Willet
+# cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
 
-
-#PBS -P ch81
+#PBS -P <project>
 #PBS -N bsv-R1-S9
 #PBS -l walltime=00:15:00
 #PBS -l ncpus=1
@@ -15,19 +33,32 @@
 #PBS -l wd
 #PBS -o ./Logs/bsv-R1-S9_create_intervals.o
 #PBS -e ./Logs/bsv-R1-S9_create_intervals.e
-#PBS -lstorage=scratch/er01+scratch/ch81
+#PBS -l storage=<lstorage>
 
 module load gatk/4.1.2.0
 
 set -e
 
-ref=./Reference/maclag_purgedhifi_10xarcs_jelly_pilon.fasta
+ref=<ref>
 
-int=100 # number of intervals to create
+int=100 # number of intervals to create. If this many cannot be made according to these flags, GATK will emit less than int.
+
+log=./GATK_logs/create_bqsr_apply_intervals.oe
+rm -rf $log
 
 gatk SplitIntervals \
 	--java-options "-Xmx3g" \
 	--subdivision-mode BALANCING_WITHOUT_INTERVAL_SUBDIVISION \
         -R $ref \
         -scatter-count ${int} \
-        -O ./Reference/BQSR_apply_intervals
+        -O ./Reference/BQSR_apply_intervals >> ${log} 2>&1
+	
+if grep -q -i error $log
+then 
+	printf "Error in GATK log ${log}\n" 
+fi 	
+	
+if grep -q Exception $log
+then 
+	printf "Exception in GATK log ${log}\n"
+fi 

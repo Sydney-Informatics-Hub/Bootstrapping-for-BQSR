@@ -1,8 +1,26 @@
 #!/bin/bash
 
-#Consolidate GVCFs - failed tasks from first round of GenomicsDBimport
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: Consolidate GVCFs for failed tasks from step 19
+# Author: Cali Willet
+# cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
 
-#PBS -P ch81
+#PBS -P <project>
 #PBS -N chunk1-bsv-R1-S20
 #PBS -l walltime=05:00:00
 #PBS -l ncpus=192
@@ -12,7 +30,7 @@
 #PBS -W umask=022
 #PBS -o ./Logs/bsv-R1-S20-chunk1.o 
 #PBS -e ./Logs/bsv-R1-S20-chunk1.e 
-#PBS -lstorage=scratch/er01+scratch/ch81
+#PBS -l storage=<lstorage>
 
 
 module load openmpi/4.0.2

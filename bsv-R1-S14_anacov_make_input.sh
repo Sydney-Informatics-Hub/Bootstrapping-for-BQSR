@@ -5,7 +5,6 @@
 # Platform: NCI Gadi HPC
 # Description: make inputs file for parallel exectuion of 
 # GATK AnalyzeCovariates
-# Usage: bash bqsr_gather_make_input.sh <cohort_name>
 # Details:
 #	Create sample list for gathering chunked BQSR recal tables 
 #	to one recal table per sample. Provide cohort name as argument. 
@@ -13,7 +12,7 @@
 #
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -27,19 +26,14 @@
 # 
 #########################################################
 
-if [ -z "$1" ]
-then
-        echo "Please run this script with the base name of your config file"
-        exit
-fi
-
-cohort=$1
+cohort=<cohort>
+config=${cohort}.config
 
 input=./Inputs/anacov.inputs
 
 rm -f $input
 
-awk 'NR>1 {print $2}' ${cohort}.config > ${input}					
+awk 'NR>1 {print $2}' ${config} > ${input}					
 tasks=`wc -l < $input`
 printf "Number of analyse covariates tasks to run: ${tasks}\n"
 	

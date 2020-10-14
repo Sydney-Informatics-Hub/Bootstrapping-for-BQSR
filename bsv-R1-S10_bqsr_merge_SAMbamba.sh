@@ -5,13 +5,12 @@
 # Platform: NCI Gadi HPC
 # Description: merge recalibrated split BAM files into a final 
 # BAM per sample with SAMbamba merge, parallel by sample
-# Usage: this script is executed by bqsr_merge_SAMbamba_run_parallel.pbs
 # Details:
 #	SAMbamba will automatically create bai given that the input is 
 #	coordinate sorted
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -27,9 +26,9 @@
 
 set -e
 
-round=1
+round=<round>
 
-module load sambamba/0.7.1 samtools/1.10
+module load sambamba/0.7.1 samtools/1.10 # sambamba is a local install 
 
 labSampleID=`echo $1 | cut -d ',' -f 1` 
 

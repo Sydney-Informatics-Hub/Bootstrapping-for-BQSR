@@ -1,12 +1,26 @@
 #!/bin/bash
 
-# Bootstrap a variant resource for non-model organisms
-# lacking a resource for base quality score recalibration 
-# with GATK
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: apply filter to extracted, filtered indels from steps 2 and 4
+# Author: Cali Willet
+# cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
 
-# Bootstrap variants round 1 step 5: apply filter
-
-#PBS -P ch81
+#PBS -P <project>
 #PBS -N bsv-R1-S6
 #PBS -l walltime=03:00:00
 #PBS -l ncpus=1
@@ -16,23 +30,26 @@
 #PBS -W umask=022
 #PBS -o ./Logs/bsv-R1-S6.o
 #PBS -e ./Logs/bsv-R1-S6.e
-#PBS -l storage=scratch/er01+scratch/ch81
+#PBS -l storage=<lstorage>
 
 set -e
 
-module load gatk/4.1.2.0 R/3.6.1 python3/3.7.4 
+module load gatk/4.1.2.0 
 
-round=1
+round=<round>
 step=6
 type=INDEL
 
-cohort=Devils_N37
-ref=./Reference/GCA_902635505.1_mSarHar1.11_genomic.fna
+cohort=<cohort>
+ref=<ref>
 vcf_in=./VCFs/${cohort}_bootstrap-R1-S4_${type}_rawFilter.vcf
 vcf_out=./VCFs/${cohort}_bootstrap-R${round}-S${step}_${type}_filtered.vcf
-log=./GATK_logs/${cohort}_bootstrap-R${round}-S${step}_${type}_filtered.oe
+log=./GATK_logs/Var_filtering_round${round}/${cohort}_bootstrap-R${round}-S${step}_${type}_filtered.oe
+
+rm -rf $log
 
 echo "$(date): Bootstrap round ${round} step ${step}: Select ${type} variants" >> ${log} 2>&1
+
 gatk --java-options "-Xmx29g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" \
 	SelectVariants \
         -R $ref \
@@ -41,3 +58,14 @@ gatk --java-options "-Xmx29g -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" \
         -O $vcf_out >> ${log} 2>&1
 
 
+echo "$(date): Finished." >> ${log} 2>&1
+
+if grep -q -i error $log
+then 
+        printf "Error in GATK log ${log}\n" 
+fi 
+
+if grep -q Exception $log
+then 
+        printf "Exception in GATK log ${log}\n" 
+fi

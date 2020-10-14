@@ -1,12 +1,27 @@
 #!/usr/bin/env perl
 
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: chck time and memory usage and errors in GATK logs to uncover failed tasks from step 16
+# Author: Tracy Chew and Cali Willet
+# tracy.chew@sydney.edu.au;cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+#########################################################
+
 use strict;
 use warnings;
-
-# Collect time and memory from logs. If these are unavailable, there was
-# an error.
-# Check the error capture directory, which will list any intervals where
-# grep -i error or grep Exception yielded a result
 
 my $round = 1;  
 

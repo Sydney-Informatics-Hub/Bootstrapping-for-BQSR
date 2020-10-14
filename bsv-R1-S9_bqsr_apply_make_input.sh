@@ -4,7 +4,6 @@
 # 
 # Platform: NCI Gadi HPC
 # Description: make inputs file for parallel exectuion of GATK ApplyBQSR
-# Usage: bash bqsr_apply_mke_input.sh <cohort_name>
 # Details:
 # 	Job can be run as separate tumour/normal jobs, or as one job. 
 #	The contigs do take longer to print for tumour compared to normal re 
@@ -16,11 +15,11 @@
 #	contigs are processed first. If no binomial grouping is desired, change 
 #	group=true to group=false. Assumes all non-cancer samples have suffix '-N',
 #	all other phenotype IDs are assigned to tumour.
-#	Provide cohort name as argument. Sample info is read from <cohort>.config
+#	Sample info is read from <cohort>.config
 #
 # Author: Cali Willet
 # cali.willet@sydney.edu.au
-# Date last modified: 24/07/2020
+# Date last modified: 14/10/2020
 #
 # If you use this script towards a publication, please acknowledge the
 # Sydney Informatics Hub (or co-authorship, where appropriate).
@@ -35,7 +34,8 @@
 #########################################################
 
 
-cohort=$1
+cohort=<cohort>
+config=${cohort}.config
 
 group=false
 
@@ -47,7 +47,7 @@ rm -f $t_input
 rm -f $n_input
 rm -f $input
 
-dict=./Reference/GCA_902635505.1_mSarHar1.11_genomic.dict
+dict=<dict>
 
 tasks=7 # Need to work out a way of automating this, but for now ths is decided  manually: use the dict file to determine the optimal number of tasks, which will usually be the number of autosomes + X plus 1, 
 # ie do all the large contigs as separate tasks, then 1 extra task to do the remaining contigs (Y if present, MT, unplaced) plus the unmapped in one list
@@ -76,7 +76,7 @@ function print_inputs {
 	fi 
 }
 
-awk 'NR>1' ${cohort}.config | while read CONFIG
+awk 'NR>1' ${config} | while read CONFIG
 do 
         labSampleID=`echo $CONFIG | cut -d ' ' -f 2`
 	intervals_file=./Inputs/bqsr_apply_${labSampleID}.intervals
