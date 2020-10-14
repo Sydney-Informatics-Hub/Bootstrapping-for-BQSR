@@ -20,14 +20,14 @@ In brief, these steps are:
 2)	Create intervals for variant calling (3200)
 3)	FastQC		
 4)	Fastq split
-5)	Collect fastq logs (perl) – reports reads, estimates duplication, etc
+5)	Collect fastq logs (perl) ? reports reads, estimates duplication, etc
 6)	Check fastq split sizes (requires fastQC data.txt)
 7)	Align parallel (tasks per sample = number of split fastq pairs) 
-8)	Check Bam sizes – quick check that assumes the fastq.gz are in default gzip format (eg some pre-processing tools write the new fastq in a different compression so this will throw out the values -expect Bam to be ~ 1.4-~1.45 times larger than the total fastq input size per sample 
+8)	Check Bam sizes ? quick check that assumes the fastq.gz are in default gzip format (eg some pre-processing tools write the new fastq in a different compression so this will throw out the values -expect Bam to be ~ 1.4-~1.45 times larger than the total fastq input size per sample 
 9)	Merge to per-sample raw bam
 10)	Dedup/sort and index
 11)	Collect dup logs (summarises dup % etc)
-12)	Reformat split disc (converts the split/disc read sam files to sorted, indexed BAM – useful for SV calling later) 
+12)	Reformat split disc (converts the split/disc read sam files to sorted, indexed BAM ? useful for SV calling later) 
 13)	Index 
 14)	Alignment metrics
 15)	Haplotype caller parallel (tasks per sample = 3200)
@@ -49,9 +49,20 @@ The following 24 steps are for ONE round of bootstrapping. If multiple rounds ar
 
 The scripts are labelled 'bsv-R<round>-S<stepNumber>_<step_name>' to make it easy to understand the order in which the steps are executed. 
 
-Resources are indicated from one cohort of 37 Tasmanian devils. 
+Resources are indicated from one cohort of 37 Tasmanian devils.
 
-Step 0: Create intervals for BQSR. Number of intervals must be (genome_size/100 Mb) – min interval size is 100 Mb. Number of intervals is determined by the script. Not listing this as a step, because ideally it should go in the same script as the generate HC intervals part - this will be updated later. 
+There are **two set up steps:**
+
+Setup 1) run the following, entering the appropriate repsonses at prompts:
+
+``` {bash setup}
+bash create_project.bash
+```
+
+This updates common required changes to the scripts in this pipeline. There remain a handful of edits that are requierd manually, so please read the guide carefully.
+
+
+Setup 2) Create intervals for BQSR. Number of intervals must be (genome_size/100 Mb) ? min interval size is 100 Mb. Number of intervals is determined by the script. Not listing this as a step, because ideally it should go in the same script as the generate HC intervals part - this will be updated later. 
 
 Update the PBS directives (project, lstorage) and edit the 'ref' and 'dict' variables, then run:
 
@@ -64,7 +75,7 @@ Resources: 1 CPU, 1 GB mem, < 1 minute.
 ## Step 1: Extract SNPs
 Use 'SelectVariants' to extract SNPs from the joint-called final output VCF from 'Germline-ShortV' pipeline to a SNP-only VCF. 
 
-Update the PBS directives (project, lstorage) and edit the 'ref', 'round' (eg round 1, 2 etc of bootstrapping) and 'cohort' variables. Update the 'vcf_in' varable to the final VCF joint-genotyped output from the 'Germline-ShortV' pipeline, then run:
+Update the 'vcf_in' varable to the final VCF joint-genotyped output from the 'Germline-ShortV' pipeline, then run:
 
 ```{bash Extract SNPs}
 qsub bsv-R1-S1_select_variants_snps.pbs
@@ -75,7 +86,7 @@ Resources: 1 hugemem CPU, 22 GB mem, ~ 5 minutes.
 ## Step 2: Extract indels
 Use 'SelectVariants' to extract indels from the joint-called final output VCF from 'Germline-ShortV' pipeline to an indel-only VCF. 
 
-Update the PBS directives (project, lstorage) and edit the 'ref', 'round' and 'cohort' variables. Update the 'vcf_in' varable to the final VCF joint-genotyped output from the 'Germline-ShortV' pipeline, then run:
+Update the 'vcf_in' varable to the final VCF joint-genotyped output from the 'Germline-ShortV' pipeline, then run:
 
 ```{bash Extract indels}
 qsub bsv-R1-S2_select_variants_indels.pbs
@@ -86,7 +97,7 @@ Resources: 1 hugemem CPU, 13 GB mem, ~ 4 minutes.
 ## Step 3: Filter SNPs
 Use 'VariantFiltration' to filter SNPs from the SNP-only VCF output from step 1. Filtering parameters have been taken from https://gencore.bio.nyu.edu/variant-calling-pipeline-gatk4/
 
-Update the PBS directives (project, lstorage) and edit the 'ref', 'round' and 'cohort' variables, then run:
+Run:
 
 ```{bash Filter SNPs}
 qsub bsv-R1-S3_filter_variants_snps.pbs
@@ -97,7 +108,7 @@ Resources: 1 hugemem CPU, 15 GB mem, ~ 2 minutes.
 ## Step 4: Filter indels
 Use 'VariantFiltration' to filter indels from the indel-only VCF output from step 2. Filtering parameters have been taken from https://gencore.bio.nyu.edu/variant-calling-pipeline-gatk4/
 
-Update the PBS directives (project, lstorage) and edit the 'ref', 'round' and 'cohort' variables, then run:
+Run:
 
 ```{bash Filter indels}
 qsub bsv-R1-S4_filter_variants_indels.pbs
@@ -108,7 +119,7 @@ Resources: 1 hugemem CPU, 11 GB mem, ~ 1 minute.
 ## Step 5: Apply filter to SNPs
 Use 'SelectVariants' to keep only the SNPs passing the filters applied in step 3.
 
-Update the PBS directives (project, lstorage) and edit the 'ref', 'round' and 'cohort' variables, then run:
+Run:
 
 ```{bash Apply filter SNPs}
 qsub bsv-R1-S5_apply_filter_snps.pbs
@@ -119,7 +130,7 @@ Resources: 1 hugemem CPU, 19 GB mem, ~ 5 minutes.
 ## Step 6: Apply filter to indels
 Use 'SelectVariants' to keep only the indels passing the filters applied in step 4.
 
-Update the PBS directives (project, lstorage) and edit the 'ref', 'round' and 'cohort' variables, then run:
+Run:
 
 ```{bash Apply filter indels}
 qsub bsv-R1-S6_apply_filter_indels.pbs
@@ -128,19 +139,15 @@ qsub bsv-R1-S6_apply_filter_indels.pbs
 Resources: 1 hugemem CPU, 15 GB mem, ~ 3 minutes.
 
 ## Step 7: BQSR 1a - Make recalibration tables 
-Run 'BaseRecalibrator' over the intervals determined in step 0 to make a recalibration table per interval. This step uses the SNP and indel files created in steps 5 and 6 as "known sites" to train the recalibration model.  
+Run 'BaseRecalibrator' over the intervals determined in setup step 2 to make a recalibration table per interval. This step uses the SNP and indel files created in steps 5 and 6 as "known sites" to train the recalibration model.  
 
-No edits are required for the script `bsv-R1-S7_bqsr_recal_make_input.sh`
-
-Run the following, supplying the base name of your config file on the command line:
+Run:
 
 ```{bash BQSR 1a make input}
-bash bsv-R1-S7_bqsr_recal_make_input.sh <cohort>
+bash bsv-R1-S7_bqsr_recal_make_input.sh
 ```
 
-Edit the variables 'ref' and 'cohort' in `bsv-R1-S7_bqsr_recal.sh`. 
-
-Edit PBS directives (project, lstorage) and 'round' varaible in `bsv-R1-S7_bqsr_recal_run_parallel.pbs` then run the following:
+Run:
 
 ```{bash BQSR 1a run}
 qsub bsv-R1-S7_bqsr_recal_run_parallel.pbs
@@ -152,16 +159,14 @@ Resources: 1120 normalbw CPUs, 3.6 TB mem, 23 minutes.
 
 Use 'GatherBQSRReports' to gather the scattered interval tables into one table per sample. 
 
-No edits are required for the scripts `bsv-R1-S8_bqsr_gather.sh` or `bsv-R1-S8_bqsr_gather_make_input.sh`. 
-
-Run the following, supplying the base name of your config file on the command line:
+Run:
 
 ```{bash BQSR 1b make input}
-bash bsv-R1-S8_bqsr_gather_make_input.sh <cohort>
+bash bsv-R1-S8_bqsr_gather_make_input.sh
 ```
 
 
-Edit PBS directives (project, lstorage) and 'round' varaible in `bsv-R1-S8_bqsr_gather_run_parallel.pbs` then run:
+Then run:
 
 
 ```{bash BQSR 1b run}
@@ -181,18 +186,18 @@ Future improvements to this pipeline will automate the determination of number o
 
 View the .dict file for your species, and determine the number of intervals where each of the large sequences are run as their own interval, and all of the small sequences are run as one interval. The 'small' sequences are usually the Y (if present), MT and unplaced or alt contigs. This will give you the number of tasks to run per sample, ie tasks=<number of autosomes + X + 1>. 
 
-Once you have determined the value for 'tasks', edit 'tasks' and 'dict' variables in `bsv-R1-S9_bqsr_apply_make_input.sh`, then run:
+Once you have determined the value for 'tasks', edit 'tasks' variable in `bsv-R1-S9_bqsr_apply_make_input.sh`, then run:
 
 
 ```{bash BQSR 1c make input}
-bash bsv-R1-S9_bqsr_apply_make_input.sh <cohort>
+bash bsv-R1-S9_bqsr_apply_make_input.sh
 ```
 
 
 For species with very large chromosomes (eg Tas devils) GATK has a strange bug where the '-L unmapped' flag does not work. This is currently under investigation, see https://gatk.broadinstitute.org/hc/en-us/community/posts/360072812491-ApplyBQSR-to-unmapped-reads-for-non-model-organism-does-not-work-with-L-unmapped-flag?page=1#community_comment_360013025951. The `bsv-R1-S9_bqsr_apply.sh` script as it currently stands includes a workaround where the unmapped f12 reads are first extracted, and the apply recal performed in the standalone unmapepd BAMs. This will work for any species, but adds ~ 20 minutes run time per sample. Please contact me if you need help adjusting this for your species. 
 
 
-Edit PBS directives (project, lstorage) and 'round' varaible in `bsv-R1-S9_bqsr_apply_run_parallel.pbs` then run:
+Run:
 
 
 ```{bash BQSR 1c run}
@@ -207,7 +212,7 @@ Resources: 224 normalbw CPUs, 1.1 TB mem, 85 minutes.
 
 If there is no clear separation between "large sequences" and "small sequences" as expected from a polished genome assembly, the 'split intervals without subdivision' is a good approach. The arbitrary value of 100 is chosen for the number of intervals to make from the genome. If this number is too high for the specified genome, GATK will simply emit fewer intervals. 
 
-Edit the PBS directives (project, lstorage) and 'ref' variable in `bsv-R1-S9_denovo_bqsr_apply_create_intervals.pbs`, then run:
+Run:
 
 ```{bash BQSR 1c de novo prep}
 qsub bsv-R1-S9_denovo_bqsr_apply_create_intervals.pbs
@@ -215,13 +220,13 @@ qsub bsv-R1-S9_denovo_bqsr_apply_create_intervals.pbs
 
 This will create interval files in the ./Reference directory. There may be 100 as specified, or fewer, this does not matter. The next step will create the inputs file from the intervals files created, also adding the 'unmapped' interval to the list to ensure the f12 unmapped reads are retained in the recalibrated BAM. 
 
-Run the following, providing your config file base name as argument:
+Then run:
 
 ```{bash BQSR 1c de novo make input}
-bash bsv-R1-S9_denovo_bqsr_apply_make_input.sh <cohort>
+bash bsv-R1-S9_denovo_bqsr_apply_make_input.sh 
 ```
 
-Edit the 'ref' and 'round' variables in `bsv-R1-S9_denovo_bqsr_apply.sh`, then run:
+Then run::
 
 
 ```{bash BQSR 1c de novo run}
@@ -233,11 +238,10 @@ qsub bsv-R1-S9_denovo_bqsr_apply_run_parallel.pbs
 
 This step merges the multiple interval recalibrated BAMs into one recalibrated BAM per sample. GATK or SAMbamba can be used; SAMbamba is more efficient and (usually) faster but uses many more CPUs and KSUs. For small interval numbers (say < 100) the time saving with SAMbamba is probably negligible so GATK would be fine. For many (thousands) of interval BAMs to merge, SAMbamba will be much faster. Caveat on SAMbamba: every so often, a sample will inexplicably fail to merge with SAMbamba. The options are to merge that sample with GATK, or perform a 'cyclical merge' with SAMbamba, eg merge batches of BAMs and then perform a final merge.
 
-For both merge approaches, we need a sample list for the parallel PBS script. Run the following, providing your config file base name as argument:
-
+For both merge approaches, we need a sample list for the parallel PBS script. Run the following:
 
 ```{bash BQSR 1d merge make input}
-bash bsv-R1-S10_bqsr_merge_make_input.sh <cohort>
+bash bsv-R1-S10_bqsr_merge_make_input.sh
 ```
 
 
@@ -246,19 +250,17 @@ bash bsv-R1-S10_bqsr_merge_make_input.sh <cohort>
 Edit the variable 'round' in `bsv-R1-S10_bqsr_merge_GATK_make_bamLists.sh`. Note that this is a draft pipeline, so you will need to 'hash out' some code depending on which method you used to print recalibrated interval BAMs (step 9.1 or 9.2). This will be improved later!
 
 
-Run the following, providing your config file base name as argument:
+Run:
 
 ```{bash BQSR 1d merge make bamlists}
-bash bsv-R1-S10_bqsr_merge_GATK_make_bamLists.sh <cohort>
+bash bsv-R1-S10_bqsr_merge_GATK_make_bamLists.sh
 ```
 
 This will make a list of BAM files to merge per sample, required for GATK. We could parse these as a string, but list format is more reliable for long lists. 
 
-Edit the variables 'round' and 'ref' in  `bsv-R1-S10_bqsr_merge_GATK.sh`. 
-
 **Important:** if your reference genome has contigs longer than 2^29-1 bp, you need to make sure that this script has `--CREATE_INDEX=false` set in the GATK GatherBamFiles command. Step 11 creates CSI indexes for these BAMs. If your reference genome has contigs shorter than this, you can change false to true: `--CREATE_INDEX=true` and miss step 11, OR leave this setting as 'false' and change the BAM indexing method at step 11 to create BAI indexes. 
 
-Edit the PBS directives (project, lstorage) and 'ref' variable in `bsv-R1-S10_bqsr_merge_GATK_run_parallel.pbs`. Adjust the CPUs and mem: allow 1 hugemem CPU and 32 GB per sample. Then run:
+Edit `bsv-R1-S10_bqsr_merge_GATK_run_parallel.pbs` resources: Adjust the CPUs and mem, allow 1 hugemem CPU and 32 GB per sample. Then run:
 
 ```{bash BQSR 1d run}
 qsub bsv-R1-S10_bqsr_merge_GATK_run_parallel.pbs
@@ -270,9 +272,7 @@ Resources: 37 hugemem CPUs, 767 GB mem, 36 minutes.
 
 You will nede to install and compile sambamba v 0.7.1 from source, and set up your local install to load as a module. 
 
-Edit the variable 'round' in `bsv-R1-S10_bqsr_merge_SAMbamba.sh`.
-
-Edit the PBS directives (project, lstorage), 'round' variable and adjust resources in `bsv-R1-S10_bqsr_merge_SAMbamba_run_parallel.pbs`. For mammalian samples up to ~ 30X coverage, allow 14 normalbw CPUs per task, or 24 normal. For normal, request 4 CB mem per CPU requested, or number of nodes X 191 GB. For normalbw, request 9 GB mem per CPU, or number of nodes X 255 GB (whole nodes only can be requested for Gadi jobs >1 node). Check that the variable 'CPN' is set to 28 for normalbw or 48 for normal. Then run the following:
+Adjust resources in `bsv-R1-S10_bqsr_merge_SAMbamba_run_parallel.pbs`. For mammalian samples up to ~ 30X coverage, allow 14 normalbw CPUs per task, or 24 normal. For normal, request 4 CB mem per CPU requested, or number of nodes X 191 GB. For normalbw, request 9 GB mem per CPU, or number of nodes X 255 GB (whole nodes only can be requested for Gadi jobs >1 node). Check that the variable 'CPN' is set to 28 for normalbw or 48 for normal. Then run the following:
 
 
 ```{bash BQSR 1d sambamba run}
@@ -286,17 +286,17 @@ Resources: 532 normalbw CPUs, 2.14 TB mem, 32 minutes.
 
 If your reference genome has contigs longer than 2^29-1 bp, or you have run step 10 with `--CREATE_INDEX=false`, you will need to run this step. If not, proceed to step 12. 
 
-Run the following, providing your config file base name as argument:
+Run the following:
 
 
 ```{bash Index make input}
-bash bsv-R1-S11_index_make_input.sh <cohort>
+bash bsv-R1-S11_index_make_input.sh
 ```
 
-Edit the variable 'round' in `bsv-R1-S11_index.sh`. If your genome has contigs longer than 2^29-1 bp, ensure that the index command including the '-c' flag is unhashed and that the index command without '-c' is hashed out. If your genome has all contigs less than this size, hash out the command containing '-c' and unhash the command without '-c'. I will make this cleaner in future versions :-) Ie automate this from the .dict file. 
+If your genome has contigs longer than 2^29-1 bp, ensure that index=CSI in `bsv-R1-S11_index.sh` (set during setup step 1). If your genome has all contigs less than this size, ensure index=BAI. 
 
 
-Edit the PBS directives (project, lstorage) and adjust resources in `bsv-R1-S11_index_run_parallel.pbs`. Allow 24 normal CPUs per sample. Then run:
+Adjust resources in `bsv-R1-S11_index_run_parallel.pbs`. Allow 24 normal CPUs per sample. Then run:
 
 ```{bash Index run}
 qsub bsv-R1-S11_index_run_parallel.pbs
@@ -309,11 +309,9 @@ Resources: 912 normal CPUs, 1.7 TB mem, 3 minutes.
 
 Create BQSR recalibration tables on the recalibrated BAMs. These tables will be used to generate plots to assess the effectiveness of the recalibration. 
 
-Edit the variables 'round', 'cohort' and 'ref' in `bsv-R1-S12_bqsr_recal.sh`. 
-
 There is no need to make a .inputs file, as the same file can be used as BQSR recal step 7.
 
-Edit the PBS directives (project, lstorage) in `bsv-R1-S12_bqsr_recal_run_parallel.pbs` then run:
+Run:
 
 ```{bash BQSR 2a}
 qsub bsv-R1-S12_bqsr_recal_run_parallel.pbs
@@ -326,11 +324,9 @@ Resources: 1120 normalbw CPUs, 4.4 TB mem, 26 minutes.
 
 Use 'GatherBQSRReports' to gather the scattered interval tables into one table per sample. 
 
-Edit the variable 'round' in `bsv-R1-S13_bqsr_gather.sh`. 
-
 There is no need to make a .inputs file, as the same file can be used as BQSR recal step 8.
 
-Edit PBS directives (project, lstorage) in `bsv-R1-S13_bqsr_gather_run_parallel.pbs` then run:
+Run:
 
 
 ```{bash BQSR 2b}
@@ -343,15 +339,13 @@ Resources: 19 CPUs, 28 GB mem, 1 minute.
 
 Use AnalyzeCovariates to plot the base quality scores before and after recalibration, to assess the efficacy of BQSR. 
 
-Edit the variable 'round' in `bsv-R1-S14_anacov.sh`.
-
-Run the following, providing your config file base name as argument:
+Run:
 
 ```{bash anacov make input}
-bash bsv-R1-S14_anacov_make_input.sh <cohort>
+bash bsv-R1-S14_anacov_make_input.sh
 ```
 
-Edit PBS directives (project, lstorage) in `bsv-R1-S14_anacov_run_parallel.pbs`, and adjust resources. This step is very fast so <number of samples>/2 is the maximum CPUs that should be requested. Then run:
+Adjust resources in `bsv-R1-S14_anacov_run_parallel.pbs`. This step is very fast so <number of samples> divided by 2 is the maximum CPUs that should be requested. Then run:
 
 ```{bash anacov run}
 qsub bsv-R1-S14_anacov_run_parallel.pbs
@@ -369,16 +363,15 @@ We will now call germline short variants again, this time using the reclibrated 
 
 The number of tasks equals 3200 X N. Task walltime is influnced by interval and by sample size, so the inputs list is ordered by both interval walltime and by sample size to try and increase CPU efficiency. To do this, the "3200_intervals_taskTimeSorted.list" produced during the initial round of variant calling for Germline-ShortV pipeline is used, as is the input BAM sizes. 
 
-Check that the path to this time sorted list is correct in `bsv-R1-S15_hc_make_input.sh`, and that the syntax for collecting samples by size is correct for this dataset (eg, if there is a '.' character used in the sample IDs, this syntax will need to be adjusted). Also edit the 'round' variable, then run: 
+Check that the path to this time sorted list is correct in `bsv-R1-S15_hc_make_input.sh`, and that the syntax for collecting samples by size is correct for this dataset (eg, if there is a '.' character used in the sample IDs, this syntax will need to be adjusted). Then run: 
 
 
 ```{bash HC make input}
 bash bsv-R1-S15_hc_make_input.sh
 ```
 
-Edit the 'round' and 'ref' variables in `bsv-R1-S15_hc.sh`. 
 
-Edit PBS directives (project, lstorage) and 'round' varaible in `bsv-R1-S15_hc_run_parallel.pbs` then run:
+Then run:
 
 
 ```{bash HC run}
@@ -391,10 +384,10 @@ Resources: 7200 CPUs, 14 TB mem, 95 minutes.
 
 This step checks and resubmits tasks with missing or empty VCF or VCF index files. In the future, this step will be combined with step 17. 
 
-Edit the 'round' variable in `bsv-R1-S16_hc_missing_mke_input.sh` then run the following, providing your config file base name as argument:
+Run:
 
 ```{bash HC missing make input}
-bash bsv-R1-S16_hc_missing_make_input.sh <cohort>
+bash bsv-R1-S16_hc_missing_make_input.sh
 ```
 
 If this script presents the message:
@@ -403,9 +396,7 @@ If this script presents the message:
 
 then continue with the following steps. If not, continue to step 18. 
 
-Edit the 'round' and 'ref' variables in `bsv-R1-S16_hc_missing.sh`. 
-
-Edit PBS directives (project, lstorage) and 'round' varaible in `bsv-R1-S16_hc_missing_run_parallel.pbs`. Adjust the resources depending on the number of tasks to run, allowing 2 CPU and 1 hour per task, then run:
+Adjust the resources in `bsv-R1-S16_hc_missing_run_parallel.pbs` depending on the number of tasks to run, allowing 2 CPU and 1 hour per task, then run:
 
 
 ```{bash HC missing run}
@@ -421,13 +412,13 @@ Perform an in-depth check on each HaplotypeCaller task by assessing the run time
 
 **Caveat:** this set of scripts has been heavily modified since last use and not tested in depth. Please let me know if you find any errors!
 
-Run the following, providing your config file base name as argument:
+Run:
 
 ```{bash HC check make input}
-bash bsv-R1-S17_hc_checklogs_make_input.sh <cohort>
+bash bsv-R1-S17_hc_checklogs_make_input.sh
 ```
 
-Edit PBS directives (project, lstorage) and 'round' varaible in `bsv-R1-S17_hc_checklogs_run_parallel.pbs`. Adjust the resources depending on the number of samples, allowing 1 CPU and 10 minutes per task (single test sample took 2.5 minutes on the login node), then run:
+Adjust the resources in `bsv-R1-S17_hc_checklogs_run_parallel.pbs` depending on the number of samples, allowing 1 CPU and 10 minutes per task (single test sample took 2.5 minutes on the login node), then run:
 
 ```{bash HC check run}
 qsub bsv-R1-S17_hc_checklogs_run_parallel.pbs
@@ -451,16 +442,13 @@ If your samples have a big difference in coverage, you can save KSU (and increas
 ```FD01070422      1220Armin       Kinghorn                1               high```
 ```FD02807142      1450Corey       Kinghorn                1               high```
 
-Edit the variables 'round' and 'group' in  `bsv-R1-S18_hc_gathervcfs_make_input.sh`. Set 'group=true' if you want to run this step as separate jobs for separate groups based on input size, or 'group=false' to run all samples together. Then run the following, providing your config file base name as argument:
+Edit the variable 'group' in  `bsv-R1-S18_hc_gathervcfs_make_input.sh`. Set 'group=true' if you want to run this step as separate jobs for separate groups based on input size, or 'group=false' to run all samples together (note: for group=true, you will need to have a group field in column 5 of config). Then run the following:
 
 ```{bash gather GVCFs make input}
-bash bsv-R1-S18_gathervcfs_make_input.sh <cohort>
+bash bsv-R1-S18_gathervcfs_make_input.sh
 ```
 
-
-Edit 'round' variable in `bsv-R1-S18_hc_gathervcfs.sh`.
-
-Edit PBS directives (project, lstorage) and 'round' varaible in `bsv-R1-S18_gathervcfs_run_parallel.pbs`. Adjust the resources depending on the number of samples, allowing 6 CPU per sample, then run:
+Adjust the resources in `bsv-R1-S18_gathervcfs_run_parallel.pbs` depending on the number of samples, allowing 6 CPU per sample, then run:
 
 
 ```{bash Gather GVCF run}
@@ -476,15 +464,13 @@ This step combines multiple sample GCVFs into a database enabling joint genotypi
 
 This step is computationally intensive, and performance has been worsened after Gadi Q3 upgrades. NCI have investigated and been unable to identify the cause of the decreased performance. In Q1 2020, the 37 Tas Devil cohort was processed in 5 'chunks' of tasks, each chunk using 192 hugemem CPUs, ~ 3.7 TB RAM and ~ 4.1 hours walltime. When these jobs were re-run in Q3 (after the start Q3 upgrade), the same jobs used less RAM (~1.9 TB) and all failed on 5 hours walltime (668 of 3200 tasks outstanding).Interestingly, the Q1 run showed CPU efficiency values ~ 0.25 % while the Q3 run was ~ 0.65 %.  Given that each task uses 6 CPU for a single-threaded operation, the maximum CPU efficiency should be 1/6 = 0.167 %. In any case, the increase in "efficiency" yet decrease in mem and increase in walltime shows that there has been a significant system change that has affected the performance of this job. A similar circumstance has been observed for GenotypeGVCFs. For this task, the number of tasks running at once (whether in the same or concurrently running job) had a significant impact on performance, with the maximum number of tasks per node being 24 and concurrently running across all jobs being ~ 200 before performance is substantially worsened. For GenomicsDBimport, the number of tasks running at once is lower: 5 jobs x 4 nodes each X 8 tasks per node = 160 concurrent tasks. Tests at lower concurrent job numbers have not been conducted. For now, the best recommendation is to run this job with the current resources (5 jobs, 4 nodes per job, 6 CPU per task, 5 hours) which is the maximum per user for the hugemem nodes, and allow step 20 to collect and re-run any intervals that may fail on walltime. 
 
-Edit the variable 'round' in `bsv-R1-S19_genomicsdbimport_make_input.sh` then run the following:
+Run:
 
 ```{bash gdbi make}
-bash bsv-R1-S19_genomicsdbimport_make_input.sh <cohort>
+bash bsv-R1-S19_genomicsdbimport_make_input.sh
 ```
 
-Edit the variables 'round' and 'ref' in `bsv-R1-S19_genomicsdbimport.sh`. 
-
-Edit PBS directives (project, lstorage) and 'round' varaible in `bsv-R1-S19_genomicsdbimport_run_parallel.pbs`. Don't adjust the resources. This script will be submitted 5 times:
+Don't adjust the resources in `bsv-R1-S19_genomicsdbimport_run_parallel.pbs`. This script will be submitted 5 times:
 
 
 ```{bash gdbi run}
@@ -505,10 +491,10 @@ Resources: (per chunk) 192 hugemem CPUs, 1.8 - 2 TB mem, 5 hours walltime (all e
 
 This step checks the GATK logs from step 19 for interval duration, memory and errors. 
 
-Edit the 'round' variable in `bsv-R1-S20_genomicsdbimport_missing_make_input.sh` then run:
+Run:
 
 ```{bash gdbi check make input}
-bash bsv-R1-S20_genomicsdbimport_make_input.sh <cohort>
+bash bsv-R1-S20_genomicsdbimport_make_input.sh
 ```
 
 If no failed intervals are detected (please also check the parent job and ub-task exit statuses), the following message will be returned:
@@ -524,7 +510,7 @@ Writing inputs to ./Inputs/genomicsdbimport_missing.inputs"
   
 This inputs file is then used to resubmit the failed tasks. If there are more than 340, split the inputs into chunks (as per step 19) and run a separate PBS job per chunk. 
 
-Edit the PBS directives 'round' and 'lstorage'. The .sh script from step 19 is executed by this PBS run script, so if it has been moved/deleted, please restore it. If there are fewer than 340 inputs, the walltime may be reduced commensurately. Then run:
+The .sh script from step 19 is executed by this PBS run script, so if it has been moved/deleted, please restore it. If there are fewer than 340 inputs, the walltime may be reduced commensurately. Then run:
 
 
 ```{bash gdbi check run}
@@ -537,13 +523,13 @@ Resources: (per chunk of 334) 192 hugemem CPUs, 1.7 TB mem, 3.5 - 4 hrs walltime
 
 During this step, joint genotyping is performed, taking your callset from multple single-sample GVCFs to a single, genotyped VCF. This step is heavily I/O bound and causes Lustre filesystem performane issues, which casue all tasks to slow down. This problem was only observed after the Q3 Gadi update. NCI have invesigated but not found the cause. Many test runs were conducted to try and improve performance, including different GATK and java versions, different flags, different node types, but nothing helped. The current advice is to restrict the number of tasks running at once (either in the same or separate PBS jobs) to ~ 200, and to run a maximum of 24 tasks per node. 
 
-Edit the variables 'round' and 'list' in `bsv-R1-S21_genotypegvcfs_make_input.sh`. The 'list' variable should point to the interval_duration_memory.txt file generated from the previous round of joint genotyping. If you are doing round 1 of bootstrapping, this will be the joint genotyping step of Germline-ShortV pipeline. If you are doing subsequent rounds of bootstrapping, this will be the interval/duration file from round N - 1 of bootstraping. Then run:
+Edit the variable 'list' in `bsv-R1-S21_genotypegvcfs_make_input.sh`. The 'list' variable should point to the interval_duration_memory.txt file generated from the previous round of joint genotyping. If you are doing round 1 of bootstrapping, this will be the joint genotyping step of Germline-ShortV pipeline. If you are doing subsequent rounds of bootstrapping, this will be the interval/duration file from round N - 1 of bootstraping. Then run:
 
 ```{bash geno make input}
-bash bsv-R1-S21_genotypegvcfs_make_input.sh <cohort>
+bash bsv-R1-S21_genotypegvcfs_make_input.sh
 ```
 
-Edit the variables 'round', 'ref' and 'cohort' in `bsv-R1-S21_genotypegvcfs.sh`. Edit the PBS directives (project, storage) and variable 'round' in `bsv-R1-S21_genotypegvcfs_run_parallel.pbs`, then run:
+Then run:
 
 
 ```{bash genok run}
@@ -557,10 +543,10 @@ Resources: 432 normal CPUs, 700 GB mem, 4 hours walltime.
 
 This step checks the GATK logs from step 21 for interval duration, memory and errors. 
 
-Edit the 'round' variable in `bsv-R1-S22_genotypegvcfs_missing_make_input.sh` then run:
+Run:
 
 ```{bash geno check make input}
-bash bsv-R1-S22_genotypegvcfs_make_input.sh <cohort>
+bash bsv-R1-S22_genotypegvcfs_make_input.sh
 ```
 
 If no failed intervals are detected (please also check the parent job and ub-task exit statuses), the following message will be returned:
@@ -576,7 +562,7 @@ Writing inputs to ./Inputs/genotypegvcfs_missing.inputs"
 
 This inputs file is then used to resubmit the failed tasks. The maximum number of nodes recommended for this task is 9 (432 CPUs) running 216 concurrent tasks. If there are fewer than 216 tasks, the walltime or nodes can be decreased. Allow at least 60 minutes per task (the longest observed interval run time), eg for 216 tasks or less set walltime to at least 60 minutes. 
 
-Edit the PBS directives 'round', 'lstorage' and resources in `bsv-R1-S22_genotypegvcfs_missing_run_parallel.pbs`. The .sh script from step 21 is executed by this PBS run script, so if it has been moved/deleted, please restore it. Then run:
+The .sh script from step 21 is executed by this PBS run script, so if it has been moved/deleted, please restore it. Then run:
 
 
 ```{bash geno check run}
@@ -590,7 +576,7 @@ Resources: Refer to step 21 resources for 3200 tasks.
 
 This step gathers the genotyped interval VCFs into one final sorted and indexed VCF: these are your new set of variant calls, to replace those created in the Germline-ShortV pipeline. 
 
-Edit the variables 'cohort', 'round' and 'index' in `bsv-R1-S23_final_gather_sort_vcf.pbs`. Species with very large chromosomes seem to fail when attempting to write zipped VCF for this (and some other) GATK steps. Set 'index=CSI' for these species, and 'index=BAI' for all other species.
+Species with very large chromosomes seem to fail when attempting to write zipped VCF for this (and some other) GATK steps, so index=CSI should have ben set in setup step 0.
 
 Run the following:
 
@@ -606,7 +592,7 @@ We now need to compare the callset produced from the unrecalibrated BAM and from
 
 To start, we will produce simple metrics on each VCF with GATK. 
 
-Edit the 'cohort', 'round' and 'index' variables and PBS directives (project, lstorage) in `bsv-R1-S24_recalibrated_vcf_metrics.pbs`, then submit:
+Run:
 
 
 ```{bash metrics recal}
@@ -616,9 +602,8 @@ qsub bsv-R1-S24_recalibrated_vcf_metrics.pbs
 
 The same metrics will be generated for the original VCF. This script can be submitted at the same time as the previous. 
 
-Edit the 'cohort' and 'round' variables and PBS directives (project, lstorage) in `bsv-R1-S24_unrecalibrated_vcf_metrics.pbs`. 
 
-**Important:** Ensure that the 'vcf' variable points to the correct VCF input file: if you are doing round 1 of bootstraping, this will be the final sorted joint-genotyped VCF output from the Germline-ShortV pipeline. If you are doing round 2 or subsequent bootstrapping rounds, this will be the final sorted joint-genotyped VCF output from the previous round, eg `./GenotypeGVCFs/Round${round}/${cohort}.sorted.vcf` (or vcf.gz). 
+**Important:** Ensure that the 'vcf' variable in `bsv-R1-S24_unrecalibrated_vcf_metrics.pbs` points to the correct VCF input file: if you are doing round 1 of bootstraping, this will be the final sorted joint-genotyped VCF output from the Germline-ShortV pipeline. If you are doing round 2 or subsequent bootstrapping rounds, this will be the final sorted joint-genotyped VCF output from the previous round, eg `./GenotypeGVCFs/Round${round}/${cohort}.sorted.vcf` (or vcf.gz). 
 
 Then submit:
 
