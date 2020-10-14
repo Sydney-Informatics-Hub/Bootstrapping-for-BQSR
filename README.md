@@ -51,7 +51,7 @@ The scripts are labelled 'bsv-R<round>-S<stepNumber>_<step_name>' to make it eas
 
 Resources are indicated from one cohort of 37 Tasmanian devils.
 
-There are **two set up steps:**
+**There are two critical set up steps:**
 
 Setup 1) run the following, entering the appropriate repsonses at prompts:
 
@@ -62,9 +62,11 @@ bash create_project.bash
 This updates common required changes to the scripts in this pipeline. There remain a handful of edits that are requierd manually, so please read the guide carefully.
 
 
-Setup 2) Create intervals for BQSR. Number of intervals must be (genome_size/100 Mb) ? min interval size is 100 Mb. Number of intervals is determined by the script. Not listing this as a step, because ideally it should go in the same script as the generate HC intervals part - this will be updated later. 
+Setup 2) Create intervals for BQSR. 
 
-Update the PBS directives (project, lstorage) and edit the 'ref' and 'dict' variables, then run:
+Number of intervals must be (genome_size/100 Mb) rounded up. Minimum interval size is 100 Mb. Number of intervals is determined by the script. 
+
+Run:
 
 ```{bash Create BQSR intervals}
 qsub create_bqsr_ref_intervals.pbs
