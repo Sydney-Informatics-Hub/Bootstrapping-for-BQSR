@@ -39,12 +39,23 @@ set -e
 sample=$1
 
 round=<round>
+index=<index> # to determine whether .gz is appropriate for output or not. had to drop the GZ for devils, it threw an invalid file pointer error
 
 args=./GVCFs/Round${round}/${sample}/${sample}.gather.args
 
 mkdir -p ./GVCFs/Round${round}/${sample} ./GATK_logs/HC_round${round}/${sample}
 
-out=./GVCFs/Round${round}/${sample}/${sample}.g.vcf #had to drop the GZ for devils, it threw an invalid file pointer error 
+if [[ $index =~ BAI ]]
+then
+       out=./GVCFs/Round${round}/${sample}/${sample}.g.vcf.gz  
+elif [[ $index =~ CSI ]]
+then
+        out=./GVCFs/Round${round}/${sample}/${sample}.g.vcf 
+else
+        echo Must specify CSI or BAI - you have specified $index. Aborting.
+        exit
+fi
+ 
 log=./GATK_logs/HC_round${round}/${sample}/${sample}.gather.oe
 err=./Error_capture/HC_gather_round${round}/${sample}.err
 

@@ -365,7 +365,9 @@ We will now call germline short variants again, this time using the reclibrated 
 
 The number of tasks equals 3200 X N. Task walltime is influnced by interval and by sample size, so the inputs list is ordered by both interval walltime and by sample size to try and increase CPU efficiency. To do this, the "3200_intervals_taskTimeSorted.list" produced during the initial round of variant calling for Germline-ShortV pipeline is used, as is the input BAM sizes. 
 
-Check that the path to this time sorted list is correct in `bsv-R1-S15_hc_make_input.sh`, and that the syntax for collecting samples by size is correct for this dataset (eg, if there is a '.' character used in the sample IDs, this syntax will need to be adjusted). Then run: 
+**Important:** Check that the path to this time sorted list is correct in `bsv-R1-S15_hc_make_input.sh`, and that the syntax for collecting samples by size is correct for this dataset (eg, if there is a '.' character used in the sample IDs, this syntax will need to be adjusted). Note that the samples are ordered by size according to the BAM sizes present in the ./BQSR_bams/Round<round> directory, and NOT from the sample list in the <cohort>.config file, so if there are BAMs in this directory that are not included in this project (there should not be!) please move them (or adjust the syntax to omit them). 
+
+Run: 
 
 
 ```{bash HC make input}
@@ -450,7 +452,7 @@ Edit the variable 'group' in  `bsv-R1-S18_hc_gathervcfs_make_input.sh`. Set 'gro
 bash bsv-R1-S18_gathervcfs_make_input.sh
 ```
 
-Adjust the resources in `bsv-R1-S18_gathervcfs_run_parallel.pbs` depending on the number of samples, allowing 6 CPU per sample, then run:
+Adjust the resources in `bsv-R1-S18_gathervcfs_run_parallel.pbs` depending on the number of samples, allowing 6 CPU per sample. Then run:
 
 
 ```{bash Gather GVCF run}
@@ -466,7 +468,7 @@ This step combines multiple sample GCVFs into a database enabling joint genotypi
 
 This step is computationally intensive, and performance has been worsened after Gadi Q3 upgrades. NCI have investigated and been unable to identify the cause of the decreased performance. In Q1 2020, the 37 Tas Devil cohort was processed in 5 'chunks' of tasks, each chunk using 192 hugemem CPUs, ~ 3.7 TB RAM and ~ 4.1 hours walltime. When these jobs were re-run in Q3 (after the start Q3 upgrade), the same jobs used less RAM (~1.9 TB) and all failed on 5 hours walltime (668 of 3200 tasks outstanding).Interestingly, the Q1 run showed CPU efficiency values ~ 0.25 % while the Q3 run was ~ 0.65 %.  Given that each task uses 6 CPU for a single-threaded operation, the maximum CPU efficiency should be 1/6 = 0.167 %. In any case, the increase in "efficiency" yet decrease in mem and increase in walltime shows that there has been a significant system change that has affected the performance of this job. A similar circumstance has been observed for GenotypeGVCFs. For this task, the number of tasks running at once (whether in the same or concurrently running job) had a significant impact on performance, with the maximum number of tasks per node being 24 and concurrently running across all jobs being ~ 200 before performance is substantially worsened. For GenomicsDBimport, the number of tasks running at once is lower: 5 jobs x 4 nodes each X 8 tasks per node = 160 concurrent tasks. Tests at lower concurrent job numbers have not been conducted. For now, the best recommendation is to run this job with the current resources (5 jobs, 4 nodes per job, 6 CPU per task, 5 hours) which is the maximum per user for the hugemem nodes, and allow step 20 to collect and re-run any intervals that may fail on walltime. 
 
-Run:
+Manually update the 'times' variable in `bsv-R1-S19_genomicsdbimport_make_input.sh`. This is the time-sorted interval list created during the genomics db checklogs step of Germline-ShortV. Then run:
 
 ```{bash gdbi make}
 bash bsv-R1-S19_genomicsdbimport_make_input.sh

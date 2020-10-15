@@ -75,8 +75,10 @@ if [[ $tasks -gt 0 ]]
 then
 	printf "Number of failed GATK4 HC tasks: ${tasks}\nPlease use $OUTPUTS as input to bsv-R${round}-S16_hc_missing_run_parallel.pbs\n"
 else
-	printf "No failed GATK4 HC tasks were detected.\n"
+	printf "No failed GATK4 HC tasks were detected.Tidying up...\n"
 	rm -rf $OUTPUTS	
+	cd ./GATK_logs/HC_round${round}
+	tar --remove-files -czf haplotypecaller_logs.tar.gz *
 fi	
 	
 

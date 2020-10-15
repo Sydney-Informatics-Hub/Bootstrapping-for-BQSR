@@ -60,7 +60,7 @@ do
 	for (( s = 0; s < ${#samples[@]}; s++ ))
 	do
 		sample=${samples[$s]}
-		printf "${interval},${sample}\n" >> ${input}
+		printf "${sample},${interval},\n" >> ${input}
 	done
 done
 

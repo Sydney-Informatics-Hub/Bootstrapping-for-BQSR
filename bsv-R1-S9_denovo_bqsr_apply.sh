@@ -27,7 +27,7 @@
 module load gatk/4.1.2.0 samtools/1.10
 
 labSampleID=`echo $1 | cut -d ',' -f 1` 
-interval=`echo $1 | cut -d ',' -f 2`
+counter=`echo $1 | cut -d ',' -f 2`
 
 mem=7 #use 6 for normal nodes (2 CPU per task) or 7 for broadwell 256 GB nodes (1 CPU per task) 
 
@@ -40,7 +40,7 @@ err=./Error_capture/BQSR_round${round}/${labSampleID}.${counter}.apply.err
 
 rm -rf $log $err $bam_out
 
-list=./Reference/BQSR_apply_intervals/${interval}-scattered.interval_list
+list=./Reference/BQSR_apply_intervals/${counter}-scattered.interval_list
 if [[ $list =~ 'unmapped' ]]
 then
         list='unmapped'

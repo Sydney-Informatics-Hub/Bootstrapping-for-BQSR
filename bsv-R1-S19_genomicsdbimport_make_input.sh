@@ -24,6 +24,7 @@
 cohort=<cohort>
 config=${cohort}.config
 round=<round>
+index=<index> # to determine whether .gz is appropriate for output or not. had to drop the GZ for devils, it threw an invalid file pointer error
 
 chunks=5
 ints=3200 
@@ -36,8 +37,16 @@ vcfdir=./GVCFs/Round${round}
 awk 'NR>1' ${config} | while read LINE
 do
 	sample=`echo $LINE | cut -d ' ' -f 2`	
-	#printf "${sample}\t./GVCFs/${sample}/${sample}.g.vcf.gz\n" >> gatk4_genomicsdbimport.sample_map # can't have GZ for Devils 
-	printf "${sample}\t./GVCFs/Round${round}/${sample}/${sample}.g.vcf\n" >> $map
+	if [[ $index =~ BAI ]]
+	then
+       		printf "${sample}\t./GVCFs/${sample}/${sample}.g.vcf.gz\n" >> $map
+	elif [[ $index =~ CSI ]]
+	then
+        	printf "${sample}\t./GVCFs/Round${round}/${sample}/${sample}.g.vcf\n" >> $map
+	else
+        	echo Must specify CSI or BAI - you have specified $index. Aborting.
+       	 exit
+	fi	
 done
 
 # Make input list, sort intervals based on last import run:

@@ -25,7 +25,7 @@ config=${cohort}.config
 round=<round>
 
 logdir=./GATK_logs/GenomicsDBImport_round${round}
-list=../GenotypeGVCFs_logs/interval_duration_memory.txt ####manually verify this path!!!!!!
+list=../GenotypeGVCFs_logs/interval_duration_memory.txt # this is from Germline-ShortV genotype GVCFs checklogs step OR previous round of bootstrapping
 
 input=./Inputs/genotypegvcfs.inputs
 rm -rf $input
