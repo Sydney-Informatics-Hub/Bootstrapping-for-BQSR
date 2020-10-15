@@ -41,7 +41,7 @@ In brief, these steps are:
 
 
 # Samples
-The sample information needs to be in the <cohort>.config format used in the Fastq-to_BAM and Germline-ShortV pipelines. If there is a large discrepancy in sample BAM size, samples may be grouped into batches for some steps eg "high-cov" and "low-cov" in order to increase CPU efficiency and decrease KSU usage, but this is not necessary. In this event, please make <cohort>.config-<group> files per sized batches and edit the "make input" and "run parallel" scripts as appropriate at each step. 
+The sample information needs to be in the <cohort>.config format used in the Fastq-to_BAM and Germline-ShortV pipelines. If there is a large discrepancy in sample BAM size, samples may be grouped into batches for some steps eg "high-cov" and "low-cov" in order to increase CPU efficiency and decrease KSU usage, but this is not necessary. In this event, please add a fifth column for 'Group' to your <cohort>.config file (and ensure column 4 is not left blank for default '1') and edit the "make input" and "run parallel" scripts as appropriate at each step. See step 18 for an example of config with 'Group' and with the group option enabled in the make input file.
 
 # Bootstrapping steps
 
@@ -442,9 +442,9 @@ This step merges the 3200 GVCFs per sample into one GVCF per sample. It requires
 If your samples have a big difference in coverage, you can save KSU (and increase CPU efficiency slightly) by splitting into high and low coverage jobs (or as many groupings as appropriate). To do this, add a column to the config file for 'Group' (and ensure Library field is no longer blank for default library), eg
 
 
-```#SampleID       LabSampleID     Seq_centre      Library(default=1)      Group```
-```FD01070422      1220Armin       Kinghorn                1               high```
-```FD02807142      1450Corey       Kinghorn                1               high```
+#SampleID       LabSampleID     Seq_centre      Library(default=1)      Group
+FD01070422      1220Armin       Kinghorn                1               high
+FD02807142      1450Corey       Kinghorn                1               low
 
 Edit the variable 'group' in  `bsv-R1-S18_hc_gathervcfs_make_input.sh`. Set 'group=true' if you want to run this step as separate jobs for separate groups based on input size, or 'group=false' to run all samples together (note: for group=true, you will need to have a group field in column 5 of config). Then run the following:
 
