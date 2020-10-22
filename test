@@ -1,5 +1,0 @@
-mpirun --np $((M * PBS_NCPUS / CPN)) \
-        --map-by node:PE=${NCPUS} \
-        nci-parallel \
-        --verbose \
-        --input-file ${PBS_JOBFS}/input-file

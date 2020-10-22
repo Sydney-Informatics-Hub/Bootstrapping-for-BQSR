@@ -78,7 +78,7 @@ INPUTS=./Inputs/bqsr_apply.inputs
 mkdir -p ./BQSR_apply  ./BQSR_apply/Round${round}
 
 
-NCPUS=1 #single threaded tasks on broadwell 256 GB nodes. If running on normal nodes, set NCPUS=2, adjust 'mem' variable in $SCRIPT to 6, set CPN=48 (below ######)
+NCPUS=1 #single threaded tasks on broadwell 256 GB nodes. If running on normal nodes, set NCPUS=2, adjust 'mem' variable in $SCRIPT to 6
 
 
 #########################################################
@@ -86,7 +86,7 @@ NCPUS=1 #single threaded tasks on broadwell 256 GB nodes. If running on normal n
 # does not have 48 CPU, in which case edit the value of 'CPN'
 #########################################################
 
-CPN=28 #CPUs per node - BROADWELL
+if [[ $PBS_QUEUE =~ bw-exec ]]; then CPN=28; else CPN=48; fi
 M=$(( CPN / NCPUS )) #tasks per node
 
 sed "s|^|${SCRIPT} |" ${INPUTS} > ${PBS_JOBFS}/input-file

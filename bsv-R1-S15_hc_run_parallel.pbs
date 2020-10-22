@@ -52,7 +52,7 @@ NCPUS=1 #GATK4 does not multithread. Most tassk use ~ 4 GB
 # does not have 48 CPU, in which case edit the value of 'CPN'
 #########################################################
 
-CPN=48 #CPUs per node.  48 for intel xeon, 28 for broadwell  
+if [[ $PBS_QUEUE =~ bw-exec ]]; then CPN=28; else CPN=48; fi
 M=$(( CPN / NCPUS )) #tasks per node
 
 sed "s|^|${SCRIPT} |" ${INPUTS} > ${PBS_JOBFS}/input-file

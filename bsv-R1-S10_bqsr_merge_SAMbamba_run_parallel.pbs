@@ -68,7 +68,7 @@ round=<round>
 SCRIPT=./bsv-R1-S10_bqsr_merge_SAMbamba.sh
 INPUTS=./Inputs/bqsr_merge.inputs  
 
-NCPUS=14 # NCPUS per task. <=~30X: 14 for normalbw, 24 for normal. Double for 60X. Change CPN= depending on use of normmal or broadwell!
+NCPUS=14 # NCPUS per task. <=~30X: 14 for normalbw, 24 for normal. Double for 60X.
 
 mkdir -p ./Error_capture/BQSR_merge_sambamba_round${round} ./BQSR_bams_sambamba ./BQSR_bams_sambamba/Round${round}
 
@@ -77,7 +77,7 @@ mkdir -p ./Error_capture/BQSR_merge_sambamba_round${round} ./BQSR_bams_sambamba 
 # does not have 48 CPU, in which case edit the value of 'CPN'
 #########################################################
 
-CPN=28 #CPUs per node 
+if [[ $PBS_QUEUE =~ bw-exec ]]; then CPN=28; else CPN=48; fi
 M=$(( CPN / NCPUS )) #tasks per node
 
 sed "s|^|${SCRIPT} |" ${INPUTS} > ${PBS_JOBFS}/input-file

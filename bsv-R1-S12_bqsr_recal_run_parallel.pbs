@@ -68,7 +68,7 @@ INPUTS=./Inputs/bqsr_recal.inputs # just a sample ID and interval list, not spec
 
 mkdir -p ./BQSR_recal_tables ./BQSR_recal_tables/Round${round} ./GATK_logs/BQSR_round${round} ./Error_capture/BQSR_round${round}
 
-NCPUS=1 # on broadwell 256 GB, CPN=28
+NCPUS=1 # on broadwell 256 GB nodes. If using normal nodes, use NCPUS=2
 
 
 #########################################################
@@ -76,7 +76,7 @@ NCPUS=1 # on broadwell 256 GB, CPN=28
 # does not have 48 CPU, in which case edit the value of 'CPN'
 #########################################################
 
-CPN=28 #CPUs per node 
+if [[ $PBS_QUEUE =~ bw-exec ]]; then CPN=28; else CPN=48; fi
 M=$(( CPN / NCPUS )) #tasks per node
 
 sed "s|^|${SCRIPT} |" ${INPUTS} > ${PBS_JOBFS}/input-file
