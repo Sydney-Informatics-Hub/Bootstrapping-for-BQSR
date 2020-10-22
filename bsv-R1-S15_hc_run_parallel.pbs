@@ -48,8 +48,7 @@ mkdir -p ./GVCFs ./GVCFs/Round${round} ./GATK_logs/HC_round${round}
 NCPUS=1 #GATK4 does not multithread. Most tassk use ~ 4 GB
 
 #########################################################
-# Do not edit below this line (unless running on a node that 
-# does not have 48 CPU, in which case edit the value of 'CPN'
+# Do not edit below this line  
 #########################################################
 
 if [[ $PBS_QUEUE =~ bw-exec ]]; then CPN=28; else CPN=48; fi

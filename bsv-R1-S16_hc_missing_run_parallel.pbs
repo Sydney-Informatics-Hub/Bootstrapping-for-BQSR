@@ -49,8 +49,7 @@ mkdir -p ./GVCFs ./GVCFs/Round${round} ./GATK_logs/HC_round${round}
 NCPUS=2 # Giving 2 CPU mem to these failed tasks
 
 #########################################################
-# Do not edit below this line (unless running on a node that 
-# does not have 48 CPU, in which case edit the value of 'CPN'
+# Do not edit below this line  
 #########################################################
 
 if [[ $PBS_QUEUE =~ bw-exec ]]; then CPN=28; else CPN=48; fi
