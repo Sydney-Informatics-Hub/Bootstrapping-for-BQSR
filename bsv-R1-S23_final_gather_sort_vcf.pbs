@@ -32,7 +32,7 @@
 #PBS -W umask=022
 #PBS -o ./Logs/bsv-R1-S23.o
 #PBS -e ./Logs/bsv-R1-S23.e 
-#PBS -l storage=<lstorage>
+#PBS -lstorage=<lstorage>
 
 
 module load gatk/4.1.2.0

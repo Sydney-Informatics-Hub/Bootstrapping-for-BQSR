@@ -54,7 +54,7 @@
 #PBS -l wd 
 #PBS -o ./Logs/bsv-R1-S7.o
 #PBS -e ./Logs/bsv-R1-S7.e
-#PBS -l storage=<lstorage>
+#PBS -lstorage=<lstorage>
  
 module load openmpi/4.0.2
 module load nci-parallel/1.0.0

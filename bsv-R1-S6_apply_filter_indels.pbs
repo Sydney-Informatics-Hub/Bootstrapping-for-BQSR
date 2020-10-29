@@ -30,7 +30,7 @@
 #PBS -W umask=022
 #PBS -o ./Logs/bsv-R1-S6.o
 #PBS -e ./Logs/bsv-R1-S6.e
-#PBS -l storage=<lstorage>
+#PBS -lstorage=<lstorage>
 
 set -e
 

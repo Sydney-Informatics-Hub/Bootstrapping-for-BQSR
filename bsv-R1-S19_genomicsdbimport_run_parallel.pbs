@@ -32,7 +32,7 @@
 #PBS -W umask=022
 #PBS -o ./Logs/bsv-R1-S19-chunk1.o 
 #PBS -e ./Logs/bsv-R1-S19-chunk1.e 
-#PBS -l storage=<lstorage>
+#PBS -lstorage=<lstorage>
 
 
 module load openmpi/4.0.2

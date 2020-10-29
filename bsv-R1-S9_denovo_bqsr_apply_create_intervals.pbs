@@ -33,7 +33,7 @@
 #PBS -l wd
 #PBS -o ./Logs/bsv-R1-S9_create_intervals.o
 #PBS -e ./Logs/bsv-R1-S9_create_intervals.e
-#PBS -l storage=<lstorage>
+#PBS -lstorage=<lstorage>
 
 module load gatk/4.1.2.0
 

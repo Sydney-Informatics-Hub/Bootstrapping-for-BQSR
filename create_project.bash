@@ -5,6 +5,8 @@
 # that are required are mainly project, 'round' number and 
 # reference sequence name. Use this script to edit all of 
 # the 64 pipeline scripts, as well as create the required directory set up.
+# As the 'sed' commands within this script operate on .sh and .pbs files, 
+# this setup script has been intentionally named .bash (easiest solution).
 
 #### functions####
 function storage {
@@ -73,7 +75,7 @@ echo
 
 # Call storage function as many times as needed
 storage
-sed -i "s|#PBS -l storage=.*|#PBS -l storage=${lstorage}|" *.pbs
+sed -i "s|#PBS -lstorage=.*|#PBS -lstorage=${lstorage}|" *.pbs
 
 
 # Bootstrap round

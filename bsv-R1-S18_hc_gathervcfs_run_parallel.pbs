@@ -34,7 +34,7 @@
 #PBS -W umask=022
 #PBS -o ./Logs/bsv-R1-S18-high.o
 #PBS -e ./Logs/bsv-R1-S18-high.e
-#PBS -l storage=<lstorage>
+#PBS -lstorage=<lstorage>
 
 
 module load nci-parallel/1.0.0
