@@ -1,0 +1,53 @@
+#!/bin/bash
+
+#########################################################
+# 
+# Platform: NCI Gadi HPC
+# Description: Create evenly sized intervals over which to parallelise 
+#	GATK BQSR. The number of intervals is determined by the script,
+#	setting minimum interval size to 100 Mb. 
+# Author: Cali Willet
+# cali.willet@sydney.edu.au
+# Date last modified: 14/10/2020
+#
+# If you use this script towards a publication, please acknowledge the
+# Sydney Informatics Hub (or co-authorship, where appropriate).
+#
+# Suggested acknowledgement:
+# The authors acknowledge the scientific and technical assistance 
+# <or e.g. bioinformatics assistance of <PERSON>> of Sydney Informatics
+# Hub and resources and services from the National Computational 
+# Infrastructure (NCI), which is supported by the Australian Government
+# with access facilitated by the University of Sydney.
+# 
+######################################################### 
+
+#PBS -P <project>
+#PBS -N bqsr-int-gen
+#PBS -l walltime=00:30:00
+#PBS -l ncpus=1
+#PBS -l mem=4GB
+#PBS -q normal
+#PBS -W umask=022
+#PBS -l wd
+#PBS -o ./Logs/bqsr_intervals.o
+#PBS -e ./Logs/bqsr_intervals.e
+#PBS -lstorage=<lstorage>
+
+module load gatk/4.1.2.0
+
+set -e
+
+ref=<ref>
+dict=<dict>
+
+# Determine number of intervals based on genome size
+min=100000000 # min 100 Mb per interval for scattered BQSR table creation
+size=$(awk 'NR>1 {print $3}' ${dict} | cut -d ':' -f 2 | awk '{sum+=$1} END {print sum}')
+int=$(expr $size / $min)
+
+gatk SplitIntervals \
+	--java-options "-Xmx3g" \
+        -R $ref \
+        -scatter-count ${int} \
+        -O ./Reference/BQSR_intervals
