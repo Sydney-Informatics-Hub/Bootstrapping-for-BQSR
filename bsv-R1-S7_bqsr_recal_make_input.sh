@@ -44,6 +44,7 @@ t_input=./Inputs/bqsr_recal.inputs-tumour
 n_input=./Inputs/bqsr_recal.inputs-normal
 input=./Inputs/bqsr_recal.inputs
 
+mkdir -p ./Inputs
 rm -f $t_input
 rm -f $n_input
 rm -f $input
