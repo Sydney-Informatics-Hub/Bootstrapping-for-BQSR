@@ -39,10 +39,10 @@ known_indels=./VCFs/${cohort}_bootstrap-R${round}-S6_INDEL_filtered.vcf
 
 rm -f $log $err $out 
 
-echo "$(date): Bootstrap round ${round} step 7: Base recalibrator for interval $interval" >> ${log} 2>&
+echo "$(date): Bootstrap round ${round} step 7: Base recalibrator for interval $interval" >> ${log} 2>&1
 
 gatk BaseRecalibrator \
-	--java-options "-Xmx7G" \
+	--java-options "-Xmx7G -DGATK_STACKTRACE_ON_USER_EXCEPTION=true" \
 	-R $ref \
 	-L $interval \
 	-I $bam  \
