@@ -630,20 +630,21 @@ For the test dataset Tasmanian devils, there were 221 K more SNPs and 201 K more
 
 I intend to add some of the analyses described here: https://davetang.org/muse/2019/09/02/comparing-vcf-files/ 
 
+# Cite us to support us!
+ 
+The Bootstrapping-for-BQSR pipeline can be cited as DOI: https://doi.org/10.48546/workflowhub.workflow.153.1
+
+If you use our pipelines, please cite us:
+
+Sydney Informatics Hub, Core Research Facilities, University of Sydney, 2021, The Sydney Informatics Hub Bioinformatics Repository, <date accessed>, https://github.com/Sydney-Informatics-Hub/Bioinformatics
 
 
+# Acknowledgements
 
+Acknowledgements (and co-authorship, where appropriate) are an important way for us to demonstrate the value we bring to your research. Your research outcomes are vital for ongoing funding of the Sydney Informatics Hub and national compute facilities.
 
+Suggested acknowledgements:
 
+__NCI Gadi__
 
-
-
-
-
-
-
-
-
-
-
-
+The authors acknowledge the technical assistance provided by the Sydney Informatics Hub, a Core Research Facility of the University of Sydney. This research/project was undertaken with the assistance of resources and services from the National Computational Infrastructure (NCI), which is supported by the Australian Government.
