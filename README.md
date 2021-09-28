@@ -634,10 +634,6 @@ I intend to add some of the analyses described here: https://davetang.org/muse/2
  
 The Bootstrapping-for-BQSR pipeline can be cited as DOI: https://doi.org/10.48546/workflowhub.workflow.153.1
 
-If you use our pipelines, please cite us:
-
-Sydney Informatics Hub, Core Research Facilities, University of Sydney, 2021, The Sydney Informatics Hub Bioinformatics Repository, <date accessed>, https://github.com/Sydney-Informatics-Hub/Bioinformatics
-
 
 # Acknowledgements
 
