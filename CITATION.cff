@@ -1,0 +1,26 @@
+cff-version: 1.0.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Willet"
+    given-names: "Cali"
+    orcid: "https://orcid.org/0000-0001-8449-1502"
+  - family-names: "Chew"
+    given-names: "Tracy"
+    orcid: "https://orcid.org/0000-0001-9529-7705"
+  - family-names: "Samaha"
+    given-names: "Georgina"
+    orcid: "https://orcid.org/0000-0003-0419-1476"
+  - family-names: "Menadue"
+    given-names: "Benjamin J"
+    orcid: "https://orcid.org/0000-0001-5013-6350"
+  - family-names: "Kobayashi"
+    given-names: "Rika"
+    orcid: "https://orcid.org/0000-0002-0672-833X"
+  - family-names: "Sadsad"
+    given-names: "Rosemarie"
+    orcid: "https://orcid.org/0000-0003-2488-953X"
+title: "Bootstrapping-for-BQSR"
+version: 1.0
+doi: 10.48546/workflowhub.workflow.153.1
+date-released: 2021-06-18
+url: "https://github.com/Sydney-Informatics-Hub/Bootstrapping-for-BQSR"
