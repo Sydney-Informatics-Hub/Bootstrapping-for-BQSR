@@ -632,7 +632,7 @@ I intend to add some of the analyses described here: https://davetang.org/muse/2
 
 # Cite us to support us!
  
-The Bootstrapping-for-BQSR pipeline can be cited as DOI: https://doi.org/10.48546/workflowhub.workflow.153.1
+Willet, C., Chew, T., Samaha, G., Menadue, B. J., Kobayashi, R., & Sadsad, R. (2021). Bootstrapping-for-BQSR (Version 1.0) [Computer software]. https://doi.org/10.48546/workflowhub.workflow.153.1
 
 
 # Acknowledgements
