@@ -1,6 +1,12 @@
 # Introduction
 This is a pipeline for bootstrapping a variant resource to enable GATK base quality score recalibration (BQSR; see links below) for non-model organisms that lack a publicly available variant resource. Multiple rounds of bootstrapping can be performed. After the initial round, assess your final VCF variants and metrics and if a second round is desired, repeat all bootstrapping steps. The scripts are designed to work on NCI Gadi HPC.
 
+# ⚠️ Notice of workflow deprecation
+This workflow is no longer actively supported or maintained. While you are welcome to use the existing code, please note that no further updates, bug fixes, or support will be provided.
+
+For questions or alternative recommendations for University of Sydney staff and students, please get in touch with sih_info@sydney.edu.au. You can find alternatives at [WorkflowHub](https://workflowhub.eu/)
+
+Thank you for your understanding!
 
 # Useful links
 Thorough overview of steps: https://gencore.bio.nyu.edu/variant-calling-pipeline-gatk4/
